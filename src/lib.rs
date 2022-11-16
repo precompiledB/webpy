@@ -1,7 +1,8 @@
-use seed::{prelude::*, *, app::orders};
+use seed::{prelude::*, *};
 
 mod instructions;
 mod textinput;
+mod output_terminal;
 
 // `init` describes what should happen when your app started.
 fn init(url: Url, orders: &mut impl Orders<Msg>) -> State {
@@ -12,6 +13,7 @@ fn init(url: Url, orders: &mut impl Orders<Msg>) -> State {
     State {
         instructions,
         textinput: textinput::Model::new(),
+        output_terminal: output_terminal::Model::new(),
     }
 }
 
@@ -19,13 +21,14 @@ fn init(url: Url, orders: &mut impl Orders<Msg>) -> State {
 struct State {
     instructions: instructions::Model,
     textinput: textinput::Model,
+    output_terminal: output_terminal::Model,
 }
 
 // `Msg` describes the different events you can modify state with.
 enum Msg {
     Instructions(instructions::Msg),
     TextInput(textinput::Msg),
-
+    OutputTerminal(output_terminal::Msg),
 }
 
 // `update` describes how to handle each `Msg`.
@@ -35,8 +38,12 @@ fn update(msg: Msg, model: &mut State, orders: &mut impl Orders<Msg>) {
         Msg::Instructions(m)=> {
             instructions::update(m, &mut model.instructions, &mut orders.proxy(Msg::Instructions));
         },
+        Msg::TextInput(textinput::Msg::SubmitSuccesful(response)) => {orders.send_msg(Msg::OutputTerminal(output_terminal::Msg::ShowOutput(response))); },
         Msg::TextInput(m) => {
             textinput::update(m, &mut model.textinput, &mut orders.proxy(Msg::TextInput));
+        }
+        Msg::OutputTerminal(m) => {
+            output_terminal::update(m, &mut model.output_terminal, &mut orders.proxy(Msg::OutputTerminal))
         }
     }
 }
@@ -47,6 +54,7 @@ fn view(model: &State) -> impl IntoNodes<Msg> {
         
         instructions::view(&model.instructions).map_msg(Msg::Instructions),
         textinput::view(&model.textinput).map_msg(Msg::TextInput),
+        output_terminal::view(&model.output_terminal).map_msg(Msg::OutputTerminal),
         button![
             "Advance",
             ev(Ev::Click, |_| Msg::Instructions(instructions::Msg::NextInstruction)),

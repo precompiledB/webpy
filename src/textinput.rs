@@ -1,5 +1,7 @@
 use seed::{prelude::*, *};
 
+use web_sys::console::log_1 as consolelog;
+
 pub struct Model {
     //preexisting_text: String,
     userinput: String,
@@ -21,6 +23,8 @@ pub enum Msg {
     Clear,
     TextChanged(String),
     Submit,
+    SubmitFailed(String),
+    SubmitSuccesful(String), // TODO: change string to json/serde stuff
 }
 
 pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
@@ -39,14 +43,16 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 
             orders.perform_cmd(async {
                 let response = fetch(request).await.expect("HTTP request failed");
-/* 
+ 
                 if response.status().is_ok() {
-                    ()
+                    Msg::SubmitSuccesful(response.text().await.unwrap())
                 } else {
                     Msg::SubmitFailed(response.status().text)
-                } */
+                }
             });
-        },
+        }
+        Msg::SubmitFailed(error_msg) => consolelog(&error_msg.into()),
+        Msg::SubmitSuccesful(_response) => {},
     }
 
 

@@ -2,3 +2,7 @@ textarea {
     color: rgb(218, 180, 255);
     resize: none;
 }
+
+.non_editable {
+    readonly: 
+}
