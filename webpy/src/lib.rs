@@ -67,19 +67,6 @@ fn view(model: &State) -> impl IntoNodes<Msg> {
             "Submit",
             ev(Ev::Click, |_| Msg::TextInput(textinput::Msg::Submit)),
         ]
-        div![
-            /* "This is a counter: ",
-            C!["counter"],
-            button![
-                model.counter,
-                ev(Ev::Click, |_| Msg::Increment),
-            ], */
-            textarea![
-                id!["me"],
-                //attrs!["rows" => 10],
-                "text"
-            ],
-        ]
     ]
 }
 

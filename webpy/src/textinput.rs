@@ -37,7 +37,7 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         Msg::TextChanged(s) => model.userinput = s,
         Msg::Submit => {
             orders.skip();
-            let request = Request::new("something")
+            let request = Request::new("execute_python")
                 .method(Method::Post)
                 .text(model.userinput.clone());
 
@@ -60,8 +60,8 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 
 pub fn view(model: &Model) -> Node<Msg> {
     textarea![
-        C!["textinput"],
-        attrs!(At::Value => model.userinput),
+        C!["textinput", "editable"],
+        attrs!(At::Value => model.userinput, At::Rows => 30, At::Cols => 40),
         input_ev(Ev::Input, Msg::TextChanged)
     ]
 }

@@ -1,0 +1,15 @@
+Erste Task-Seite
+
+Hier kommen die Tasks/Instructions/Anleitungen rein, die man zu lösen hat.
+
+Beispiel Task 1: Geben Sie eine 4 im Terminal aus: 
+
+Beispiel Task 2: 
+
+Beispiel Task 3: 
+
+Beispiel Task 4: 
+
+Beispiel Task 5: 
+
+Um weiter zu machen, drücken Sie "Advance".
