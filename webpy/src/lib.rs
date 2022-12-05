@@ -57,14 +57,17 @@ fn view(model: &State) -> impl IntoNodes<Msg> {
         output_terminal::view(&model.output_terminal).map_msg(Msg::OutputTerminal),
         button![
             "Advance",
+            C!("advancebutt", "butt"),
             ev(Ev::Click, |_| Msg::Instructions(instructions::Msg::NextInstruction)),
         ],
         button![
             "Clear",
+            C!("clearbutt", "butt"),
             ev(Ev::Click, |_| Msg::TextInput(textinput::Msg::Clear)),
         ],
         button![
             "Submit",
+            C!("submitbutt", "butt"),
             ev(Ev::Click, |_| Msg::TextInput(textinput::Msg::Submit)),
         ]
     ]

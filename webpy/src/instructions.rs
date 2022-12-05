@@ -49,9 +49,9 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 }
 
 pub fn view(model: &Model) -> Node<Msg> {
-    textarea![
+    div![
         C!["instructions"],
-        attrs![At::from("readonly") => AtValue::None, At::Rows => 30],
+        //attrs![At::from("readonly") => AtValue::None],
         model.lesson_text.clone()
     ]
 }

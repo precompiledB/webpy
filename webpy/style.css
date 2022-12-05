@@ -1,13 +1,48 @@
-textarea {
-    color: rgb(218, 180, 255);
-    resize: none;
+.ace-textinput {
+    position: relative;
+    grid-area: ace;
 }
 
-.editable {
-    color:rgb(31, 30, 30)
+#editor { 
+    width: 100%;
+    height: 100%;
+}
+
+.textinput {
+    grid-area: input;
+    color: rgb(31, 30, 30);
+    /*resize: none;*/
+    /*min-height: 200pt;*/
 }
 
 .terminal {
+    grid-area: term;
     background-color: black;
     color: cornflowerblue;
+    /*resize: none;*/
+}
+
+.instructions {
+    grid-area: inst;
+    color: rgb(24, 7, 83);
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    /* resize: none; */
+}
+
+/* hehe */
+.butt {
+    grid-area: butt;
+}
+
+.root {
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-areas: 
+        "inst . term"
+        "inst . term"
+        "inst . term"
+        "butt butt ."
+        ". input ." ;
 }

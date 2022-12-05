@@ -26,6 +26,8 @@ async fn main() {
     // our router
     let app = Router::new()
         .route("/", f("webpy/index.html"))
+        .route("/DEBUG", f("webpy/ace_edit.html")) // TODO: remove
+        .route("/favicon.ico", f("webpy/favicon.ico"))
         .route("/style.css", f("webpy/style.css"))
         .route("/pkg/webpy_bg.wasm", f("webpy/pkg/webpy_bg.wasm"))
         .route("/pkg/webpy.js", f("webpy/pkg/webpy.js"))

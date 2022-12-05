@@ -6,15 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="modulepreload" href="/pkg/webpy.js" as="script" type="text/javascript">
     <link rel="preload" href="/pkg/webpy_bg.wasm" as="fetch" type="application/wasm" crossorigin="anonymous">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
-    <section id="app"></section>
-    <script type="module">
-        import init from '/pkg/webpy.js';
-        init('/pkg/webpy_bg.wasm');
+    <section class="root">
+        <section id="app"></section>
+        <script type="module">
+            import init from '/pkg/webpy.js';
+            init('/pkg/webpy_bg.wasm');
         </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.js" type="text/javascript" charset="utf-8"></script>
+        <div class="ace-textinput>">
+            <div id="editor">print("Hello World")</div>
+        </div>
+        <script>
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/monokai");
+            editor.session.setMode("ace/mode/python");
+            console.log("#####################");
+            console.log(editor);
+            setTimeout(() => {
+                editor.resize();
+                console.log(":(");
+            }, 1000);
+        </script>
+    </section>
 </body>
 
 </html>

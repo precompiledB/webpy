@@ -11,7 +11,7 @@ impl Model {
     pub fn new() -> Self {
         Self {
             //preexisting_text: String::from("test"),
-            userinput: String::from(""),
+            userinput: String::from("print(\"Hello World :)\")"),
         }
     }
 }
@@ -59,9 +59,9 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 }
 
 pub fn view(model: &Model) -> Node<Msg> {
-    textarea![
-        C!["textinput", "editable"],
-        attrs!(At::Value => model.userinput, At::Rows => 30, At::Cols => 40),
+    div![
+        C!["textinput"],
+        model.userinput.clone(),
         input_ev(Ev::Input, Msg::TextChanged)
     ]
 }
