@@ -1,6 +1,6 @@
-.ace-textinput {
+.webpyinterface {
     position: relative;
-    grid-area: ace;
+    grid-area: eingabe;
 }
 
 #editor { 
@@ -8,41 +8,59 @@
     height: 100%;
 }
 
-.textinput {
-    grid-area: input;
-    color: rgb(31, 30, 30);
-    /*resize: none;*/
-    /*min-height: 200pt;*/
-}
-
 .terminal {
     grid-area: term;
     background-color: black;
     color: cornflowerblue;
+    /* min-height: 250px; */
     /*resize: none;*/
 }
 
 .instructions {
     grid-area: inst;
-    color: rgb(24, 7, 83);
     font-family: Calibri, 'Trebuchet MS', sans-serif;
+    background-color: rgb(197, 211, 216);
     /* resize: none; */
+    /* min-height: 250px; */
 }
 
+.advancebutt {
+    grid-area: adv;
+}
+
+.clearbutt {
+    grid-area: clr;
+}
+
+.submitbutt {
+    grid-area: submit;
+}
 /* hehe */
 .butt {
     grid-area: butt;
+    display: grid;
+    grid-template-rows: 10fr 1fr 10fr 1fr 10fr;
+    grid-template-columns: auto;
+    grid-template-areas: "clr . adv . submit";
+}
+
+/* .butt > * {
+    padding: 5px;
+} */
+
+.root > * {
+    margin: 10px;
 }
 
 .root {
     display: grid;
     height: 100%;
     width: 100%;
-    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 2fr; /*width*/
+    grid-template-rows: 20px 250px 250px 250px; /*height*/
     grid-template-areas: 
-        "inst . term"
-        "inst . term"
-        "inst . term"
-        "butt butt ."
-        ". input ." ;
+        ". . butt"
+        "inst eingabe eingabe"
+        "inst eingabe eingabe"
+        "inst term term";
 }

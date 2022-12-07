@@ -49,7 +49,7 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 }
 
 pub fn view(model: &Model) -> Node<Msg> {
-    div![
+    pre![
         C!["instructions"],
         //attrs![At::from("readonly") => AtValue::None],
         model.lesson_text.clone()

@@ -11,13 +11,13 @@
 
 <body>
     <section class="root">
-        <section id="app"></section>
+        <section id="app" style="display: contents;"></section>
         <script type="module">
             import init from '/pkg/webpy.js';
             init('/pkg/webpy_bg.wasm');
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.js" type="text/javascript" charset="utf-8"></script>
-        <div class="ace-textinput>">
+        <div class="webpyinterface">
             <div id="editor">print("Hello World")</div>
         </div>
         <script>
@@ -28,8 +28,14 @@
             console.log(editor);
             setTimeout(() => {
                 editor.resize();
-                console.log(":(");
+                console.log(">:(");
             }, 1000);
+
+            const editor_val = () => {
+                let val = editor.getValue();
+                console.log(val);
+                return val;
+            }
         </script>
     </section>
 </body>

@@ -27,6 +27,12 @@ pub enum Msg {
     SubmitSuccesful(String), // TODO: change string to json/serde stuff
 }
 
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen]
+    fn editor_val() -> String;
+}
+
 pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     web_sys::console::log_1(&format!("UPDATE {:?}", msg).into());
     
@@ -36,10 +42,12 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         },
         Msg::TextChanged(s) => model.userinput = s,
         Msg::Submit => {
+            let userinput = editor_val();
+
             orders.skip();
             let request = Request::new("execute_python")
                 .method(Method::Post)
-                .text(model.userinput.clone());
+                .text(userinput);
 
             orders.perform_cmd(async {
                 let response = fetch(request).await.expect("HTTP request failed");
