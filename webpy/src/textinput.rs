@@ -31,6 +31,8 @@ pub enum Msg {
 extern "C" {
     #[wasm_bindgen]
     fn editor_val() -> String;
+    #[wasm_bindgen]
+    fn editor_clr();
 }
 
 pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
@@ -38,7 +40,7 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     
     match msg {
         Msg::Clear => {
-            model.userinput = "".into();
+            editor_clr();
         },
         Msg::TextChanged(s) => model.userinput = s,
         Msg::Submit => {

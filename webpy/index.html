@@ -28,13 +28,17 @@
             console.log(editor);
             setTimeout(() => {
                 editor.resize();
-                console.log(">:(");
+                console.log("resized the editor");
             }, 1000);
 
             const editor_val = () => {
                 let val = editor.getValue();
                 console.log(val);
                 return val;
+            }
+
+            const editor_clr = () => {
+                editor.setValue("");
             }
         </script>
     </section>

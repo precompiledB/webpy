@@ -9,8 +9,32 @@ use axum::{
 use tokio::io::AsyncReadExt;
 use tower_http::services::{ServeDir, ServeFile};
 
+mod tasks;
+
 #[tokio::main]
 async fn main() {
+    let test: tasks::Assignment = tasks::Assignment::from_toml(r#"
+        description = "hello"
+        status = "Current"
+
+        [[Task]]
+        description = "task1"
+        info = "no"
+        help = "some help text"
+        template = "print('hello world')"
+        status = "Current"
+
+        [[Task]]
+        description = "task2"
+        info = "huh?"
+        help = "some help text"
+        template = "print('hello world')"
+        status = "Current"
+
+    "#).unwrap();
+
+    println!("{:#?}", test);
+
     // build our application with a single route
     //tracing_subscriber::fmt::init();
     let f = |path| {
@@ -52,9 +76,26 @@ async fn give_file(Path(path): Path<String>) -> String {
     data
 }
 
+enum ConsoleOutput {
+    Err(String),
+    Suc(String),
+    Inf(String), // arbitrary info for user
+}
+
+impl ConsoleOutput {
+    fn to_str(self) -> String {
+        match self {
+            ConsoleOutput::Err(err) => format!("Err:{err}"),
+            ConsoleOutput::Suc(suc) => format!("Suc:{suc}"),
+            ConsoleOutput::Inf(inf) => format!("Inf:{inf}"),
+        }
+    }
+}
+
 // TODO: remove error prone error handling
 async fn exe_py(payload: String) -> String {
     use std::io::{Read, Write};
+    use ConsoleOutput::*;
 
     let mut file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
 
@@ -64,13 +105,21 @@ async fn exe_py(payload: String) -> String {
     let path = file.into_temp_path();
 
     let cmd = Command::new("python")
+        .arg("webserver/pyenv/load_tester.py")
         .arg(format!("{}", path.display()))
         .output()
         .expect("Couldn't execute python");
-    if !cmd.status.success() { // TODO: do it correclty u moron
-        panic!("OK?")
-    }
-    String::from_utf8(cmd.stdout).expect("No UTF8")
+    
+    if !cmd.status.success() {
+        let error_msg = String::from_utf8(cmd.stderr).expect("No UTF8");
+        println!("{error_msg}");
+        // TODO: Remove file path
+        Err(error_msg)
+    } else {
+        let succes_msg = String::from_utf8(cmd.stdout).expect("No UTF8");
+        Suc(succes_msg)
+    }.to_str()
+    
 
     // if let Ok(mut child) = Command::new("python")
     //     .arg("test")// format!("{}", path.display())

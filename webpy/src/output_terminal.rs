@@ -7,7 +7,7 @@ pub struct Model {
 impl Model {
     pub fn new() -> Model {
        Model {
-            data: "".into(),
+            data: "     ".into(),
        } 
     }
 }
@@ -27,9 +27,18 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 }
 
 pub fn view(model: &Model) -> Node<Msg> {
+    let (output_info, text) = (&model.data[..4], &model.data[4..]);
+    let color = match output_info {
+        "Suc:" => "color:green",
+        "Err:" => "color:red",
+        "Inf:" => "color:gray",
+        _ => "color:cauliflowerblue",
+    };
+
     div!(
         C!["terminal"],
         //attrs![At::from("readonly") => AtValue::None],
-        model.data.clone()
+        attrs![At::Style => color],
+        text
     )
 }

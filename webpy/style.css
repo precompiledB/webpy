@@ -12,6 +12,8 @@
     grid-area: term;
     background-color: black;
     color: cornflowerblue;
+    white-space: pre-wrap;
+    overflow: scroll;
     /* min-height: 250px; */
     /*resize: none;*/
 }
@@ -35,7 +37,7 @@
 .submitbutt {
     grid-area: submit;
 }
-/* hehe */
+
 .butt {
     grid-area: butt;
     display: grid;

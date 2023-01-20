@@ -2,9 +2,14 @@ Erste Task-Seite
 
 Hier kommen die Tasks/Instructions/Anleitungen rein, die man zu lösen hat.
 
-Beispiel Task 1: Geben Sie eine 4 im Terminal aus: 
+Beispiel Task 1: Geben Sie eine 4 im Terminal aus: [1]
 
 Beispiel Task 2: 
+definiere eine variable a
+[2]{
+var? b
+varval a 9    
+}
 
 Beispiel Task 3: 
 
