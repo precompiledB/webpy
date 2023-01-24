@@ -1,0 +1,16 @@
+description = "hello"
+status = "Current"
+
+[[Task]]
+description = "task1"
+info = "no"
+help = "some help text"
+template = "print('hello world')"
+status = "Current"
+
+[[Task]]
+description = "task2"
+info = "huh?"
+help = "some help text"
+template = "print('hello world')"
+status = "Current"

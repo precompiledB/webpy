@@ -1,9 +1,11 @@
 use seed::{prelude::*, *};
 
+use shared_structs::tasks::Assignment;
+
 pub struct Model {
     current_lesson: i32,
     // TODO: change to task view struct later if necessary
-    lesson_text: String,
+    lesson_text: Assignment,
     is_completed: bool, // status
 }
 
@@ -11,7 +13,7 @@ impl Model {
     pub fn new() -> Self {
         Self {
             current_lesson: 0,
-            lesson_text: String::from("TEST"),
+            lesson_text: Assignment::create_stub(),
             is_completed: false,
         }
     }
@@ -29,7 +31,8 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         Msg::NextInstruction => {
             orders.skip();
 
-            let request = Request::new(format!("assets/{}.txt", model.current_lesson));
+            let request = Request::new(format!("assets/task{}.toml", model.current_lesson));
+            //let request = Request::new(format!("assets/{}.txt", model.current_lesson));
 
             orders.perform_cmd(async {
                 let data = fetch(request).await.expect("Couldn't get data");
@@ -41,17 +44,40 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
                 0 => 1, 1 => 0, _ => 99,
             };
         }
-        Msg::ReceiveView(text) => {
-            model.lesson_text = text;
+        Msg::ReceiveView(payload) => {
+            let ass = Assignment::from_toml(&payload).unwrap();
+            model.lesson_text = ass;
             orders.render();
         }
     }
 }
 
 pub fn view(model: &Model) -> Node<Msg> {
-    pre![
+    let (symbol, color) = match model.lesson_text.status {
+        shared_structs::tasks::Status::Complete => ("[x]","gray"),
+        shared_structs::tasks::Status::Current => ("[.]", "white"),
+        shared_structs::tasks::Status::Locked => ("###","darkgray"),
+    };
+
+    let tasks = model.lesson_text.tasks.iter().enumerate().map(|(idx, t)|{
+        div![
+            button![
+                C!["collapsible"],
+                idx,
+                ev(Ev::Click, |_| )
+            ],
+            div![
+                C!["content"], 
+                p![&t.description],
+                p![&t.info],
+            ],
+        ]
+    });
+
+    div![
         C!["instructions"],
-        //attrs![At::from("readonly") => AtValue::None],
-        model.lesson_text.clone()
+        &model.lesson_text.description,
+        div![attrs!(At::Color => color), symbol],
+        tasks
     ]
 }

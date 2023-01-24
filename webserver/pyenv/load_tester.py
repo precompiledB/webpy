@@ -1,11 +1,13 @@
 from sys import argv
 
+
 def read_file(file_path) -> str:
     file = file_path
     with open(file, "r", encoding="utf-8") as user_code:
         payload = user_code.read()
         print('Success, reading:\n***\n', payload, '\n***')
         return payload
+
 
 def create_globals() -> dict:
     # copy builtins so to not overwrite the current global __builtins__
@@ -29,8 +31,10 @@ def create_globals() -> dict:
 def var_exists(locals, var_name):
     return True if var_name in locals else False
 
+
 def var_checkval(locals, var_name, expected):
     return True if var_exists(locals, var_name) and locals[var_name] == expected else False
+
 
 def var_checktype(locals, var_name, *types):
     if var_exists(locals, var_name):
@@ -39,12 +43,27 @@ def var_checktype(locals, var_name, *types):
     else:
         return False
 
+
+def fnc_checkval(locals, fnc_name, expected_output):
+    return True if var_exists(locals, fnc_name) and locals[fnc_name]() == expected_output else False
+
+def cls_checkattrib(locals, cls_name, attrib):
+    if var_exists(locals, cls_name):
+        return attrib in locals[cls_name].__dict__
+    return False
+
+def cls_checkattribval(locals, cls_name, attrib, val):
+    if cls_checkattrib(locals, cls_name, attrib):
+        return locals[cls_name].__dict__[attrib] == val
+    else:
+        return False
+
+
 def main() -> None:
     user_code = read_file(file_path=argv[1])
     gbl = create_globals()
     lcl = {}
     exec(user_code, gbl, lcl)
-
 
     # --- testing code
 
@@ -53,9 +72,12 @@ def main() -> None:
 
     print(lcl)
 
-    lcl['hello']()
+    print("fnc?", fnc_checkval(lcl, "hello", False))
 
-    print(var_checktype(lcl, "a", bool, dict, float, int))
+    print("checkval?", var_checktype(lcl, "a", bool, dict, float, int))
+
+    print("attrib?", cls_checkattrib(lcl, "A", "a"))
+    print("attrib_val?", cls_checkattribval(lcl, 'A', 'b', "test"))
 
 if __name__ == "__main__":
     main()

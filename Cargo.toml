@@ -1,8 +1,10 @@
 [workspace]
 members = [
     "webpy",
-    "webserver"
+    "webserver",
+    "shared_structs",
 ]
 default-members = [
-    "webserver"
+    "webserver",
+    "shared_structs",
 ]

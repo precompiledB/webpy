@@ -9,32 +9,10 @@ use axum::{
 use tokio::io::AsyncReadExt;
 use tower_http::services::{ServeDir, ServeFile};
 
-mod tasks;
+use shared_structs::tasks;
 
 #[tokio::main]
 async fn main() {
-    let test: tasks::Assignment = tasks::Assignment::from_toml(r#"
-        description = "hello"
-        status = "Current"
-
-        [[Task]]
-        description = "task1"
-        info = "no"
-        help = "some help text"
-        template = "print('hello world')"
-        status = "Current"
-
-        [[Task]]
-        description = "task2"
-        info = "huh?"
-        help = "some help text"
-        template = "print('hello world')"
-        status = "Current"
-
-    "#).unwrap();
-
-    println!("{:#?}", test);
-
     // build our application with a single route
     //tracing_subscriber::fmt::init();
     let f = |path| {
@@ -58,8 +36,8 @@ async fn main() {
         .route("/assets/:name", get(give_file))
         .route("/execute_python/", post(exe_py));
 
-    // run it with hyper on localhost:3000
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    // run it with hyper on localhost:8080
+    axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
@@ -119,20 +97,4 @@ async fn exe_py(payload: String) -> String {
         let succes_msg = String::from_utf8(cmd.stdout).expect("No UTF8");
         Suc(succes_msg)
     }.to_str()
-    
-
-    // if let Ok(mut child) = Command::new("python")
-    //     .arg("test")// format!("{}", path.display())
-    //     .spawn()
-    // {
-    //     child.wait().expect("command wasn't running");
-    //     println!("Child has finished its execution!");
-    //     let mut stdout = child.stdout.take().expect("Cannot get stdout");
-    //     let mut buf = String::new();
-    //     stdout.read_to_string(&mut buf).expect("Cannot read from string");
-    //     buf
-    // } else {
-    //     println!("ls command didn't start");
-    //     "ERROR".into()
-    // }
 }
