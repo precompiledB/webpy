@@ -1,12 +1,16 @@
 use seed::{prelude::*, *};
 
 use shared_structs::tasks::Assignment;
+use web_sys::{console::debug_1, HtmlDivElement};
 
 pub struct Model {
     current_lesson: i32,
     // TODO: change to task view struct later if necessary
     lesson_text: Assignment,
     is_completed: bool, // status
+    is_pressed: Vec<bool>,
+    el_ref: ElRef<HtmlDivElement>,
+    scroll_height: i32,
 }
 
 impl Model {
@@ -15,6 +19,9 @@ impl Model {
             current_lesson: 0,
             lesson_text: Assignment::create_stub(),
             is_completed: false,
+            is_pressed: vec![],
+            el_ref: ElRef::default(),
+            scroll_height: 20,
         }
     }
 }
@@ -23,6 +30,7 @@ impl Model {
 pub enum Msg {
     NextInstruction,
     ReceiveView(String),
+    Press(usize)
 }
 
 pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
@@ -47,12 +55,28 @@ pub fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         Msg::ReceiveView(payload) => {
             let ass = Assignment::from_toml(&payload).unwrap();
             model.lesson_text = ass;
+            model.is_pressed = (0..model.lesson_text.tasks.len()).map(|_| false).collect::<Vec<_>>();
             orders.render();
+        }
+        Msg::Press(idx) => {
+            model.is_pressed[idx] = !model.is_pressed[idx];
+
+            let scroll_height = model.el_ref.get().and_then(|x| Some(x.scroll_height())).unwrap_or(200);
+            model.scroll_height = scroll_height;
+
+            debug_1(&format!("SH is {scroll_height}", ).into());
         }
     }
 }
 
+#[wasm_bindgen]
+extern "C" {
+    fn change_scroll_height(is_pressed: bool);
+}
+
 pub fn view(model: &Model) -> Node<Msg> {
+    debug_1(&format!("{:?}", &model.lesson_text).into());
+
     let (symbol, color) = match model.lesson_text.status {
         shared_structs::tasks::Status::Complete => ("[x]","gray"),
         shared_structs::tasks::Status::Current => ("[.]", "white"),
@@ -60,17 +84,32 @@ pub fn view(model: &Model) -> Node<Msg> {
     };
 
     let tasks = model.lesson_text.tasks.iter().enumerate().map(|(idx, t)|{
+        /* style![St::Display => match model.is_pressed[idx] {
+            true => "block",
+            false => "none",
+        }], */
+
+        let content = div![
+            C!["content"], 
+            if model.is_pressed[idx] {
+                style![St::MaxHeight => format!("{}px", model.scroll_height), St::Transition => "max-height 0.5s ease-in"]
+                //"max-height: 0; transition: max-height 0.5s ease-out;"
+            } else {
+                style![St::MaxHeight => 0, St::Transition => "max-height 0.5s ease-out"]
+                //"max-height: 200px; transition: max-height 0.5s ease-in;"
+            },
+            p![&t.description],
+            p![&t.info],
+            el_ref(&model.el_ref),
+        ];
+
         div![
             button![
-                C!["collapsible"],
+                C!["collapsible", IF!(model.is_pressed[idx] => "active")],
                 idx,
-                ev(Ev::Click, |_| )
+                ev(Ev::Click, move |_| Msg::Press(idx))
             ],
-            div![
-                C!["content"], 
-                p![&t.description],
-                p![&t.info],
-            ],
+            content,
         ]
     });
 

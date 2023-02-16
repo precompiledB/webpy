@@ -40,6 +40,14 @@
             const editor_clr = () => {
                 editor.setValue("");
             }
+
+            const change_scroll_height = (is_pressed) => {
+                if (is_pressed) {
+                    this.content.style.maxHeight = null;
+                } else {
+                    this.content.style.maxHeight = this.content.scrollHeight + "px";
+                }
+            };
         </script>
     </section>
 </body>

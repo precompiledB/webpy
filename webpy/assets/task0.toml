@@ -10,7 +10,15 @@ status = "Current"
 
 [[Task]]
 description = "task2"
-info = "huh?"
+info = """
+huh?
+
+is this supposed to be an info text?
+what should i write here?
+hm...
+
+Maybe it's a task that should be executed with python.
+"""
 help = "some help text"
 template = "print('hello world')"
 status = "Current"
