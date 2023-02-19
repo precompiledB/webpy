@@ -1,4 +1,4 @@
-use seed::{prelude::*, *};
+/*use seed::{prelude::*, *};
 
 mod instructions;
 mod textinput;
@@ -76,8 +76,11 @@ fn view(model: &State) -> impl IntoNodes<Msg> {
     ]
 }
 
+/*
 #[wasm_bindgen(start)]
 pub fn main() {
     // Mount the `app` to the element with the `id` "app".
     App::start("app", init, update, view);
 }
+*/
+*/
