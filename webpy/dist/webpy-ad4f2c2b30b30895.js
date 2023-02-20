@@ -746,7 +746,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('webpy-adce9abbc9dd5dcc_bg.wasm', import.meta.url);
+        input = new URL('webpy-ad4f2c2b30b30895_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 

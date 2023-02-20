@@ -1,7 +1,7 @@
 use seed::{prelude::*, *};
 
 use shared_structs::tasks::Assignment;
-use web_sys::{console::debug_1, HtmlDivElement};
+use web_sys::HtmlDivElement;
 
 pub struct Model {
     current_lesson: i32,
