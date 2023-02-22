@@ -5,8 +5,8 @@
     <link rel="preload" href="/pkg/webpy_bg.wasm" as="fetch" type="application/wasm" crossorigin="anonymous">
     <link rel="stylesheet" href="/style.css">
 
-<link rel="preload" href="/webpy-ad4f2c2b30b30895_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/webpy-ad4f2c2b30b30895.js"></head>
+<link rel="preload" href="/webpy-714afd4e8c0d3eb7_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/webpy-714afd4e8c0d3eb7.js"></head>
 
 <body>
     <section class="root">
@@ -20,15 +20,19 @@
             <div id="editor">print("Hello World")</div>
         </div>
         <script>
-            var editor = ace.edit("editor");
-            editor.setTheme("ace/theme/monokai");
-            editor.session.setMode("ace/mode/python");
-            console.log("#####################");
-            console.log(editor);
-            setTimeout(() => {
-                editor.resize();
-                console.log("resized the editor");
-            }, 1000);
+            var editor;
+
+            const editor_create = () => {
+                editor = ace.edit("editor");
+                editor.setTheme("ace/theme/monokai");
+                editor.session.setMode("ace/mode/python");
+                console.log("#####################");
+                console.log(editor);
+                setTimeout(() => {
+                    editor.resize();
+                    console.log("resized the editor");
+                }, 1000);
+            };
 
             const editor_val = () => {
                 let val = editor.getValue();
@@ -39,20 +43,11 @@
             const editor_clr = () => {
                 editor.setValue("");
             }
-
-            const change_scroll_height = (is_pressed) => {
-                if (is_pressed) {
-                    this.content.style.maxHeight = null;
-                } else {
-                    this.content.style.maxHeight = this.content.scrollHeight + "px";
-                }
-            };
         </script>
     </section>
 
 
-
-<script type="module">import init from '/webpy-ad4f2c2b30b30895.js';init('/webpy-ad4f2c2b30b30895_bg.wasm');</script><script>(function () {
+<script type="module">import init from '/webpy-714afd4e8c0d3eb7.js';init('/webpy-714afd4e8c0d3eb7_bg.wasm');</script><script>(function () {
     var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var url = protocol + '//' + window.location.host + '/_trunk/ws';
     var poll_interval = 5000;

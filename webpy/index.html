@@ -16,20 +16,25 @@
             import init from '/pkg/webpy.js';
             init('/pkg/webpy_bg.wasm');
         </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.js" type="text/javascript"
+            charset="utf-8"></script>
         <div class="webpyinterface">
             <div id="editor">print("Hello World")</div>
         </div>
         <script>
-            var editor = ace.edit("editor");
-            editor.setTheme("ace/theme/monokai");
-            editor.session.setMode("ace/mode/python");
-            console.log("#####################");
-            console.log(editor);
-            setTimeout(() => {
-                editor.resize();
-                console.log("resized the editor");
-            }, 1000);
+            var editor;
+
+            const editor_create = () => {
+                editor = ace.edit("editor");
+                editor.setTheme("ace/theme/monokai");
+                editor.session.setMode("ace/mode/python");
+                console.log("#####################");
+                console.log(editor);
+                setTimeout(() => {
+                    editor.resize();
+                    console.log("resized the editor");
+                }, 1000);
+            };
 
             const editor_val = () => {
                 let val = editor.getValue();
@@ -40,14 +45,6 @@
             const editor_clr = () => {
                 editor.setValue("");
             }
-
-            const change_scroll_height = (is_pressed) => {
-                if (is_pressed) {
-                    this.content.style.maxHeight = null;
-                } else {
-                    this.content.style.maxHeight = this.content.scrollHeight + "px";
-                }
-            };
         </script>
     </section>
 </body>

@@ -60,8 +60,16 @@ pub mod instructions {
                         format!("max-height: 0px; transition: max-height 0.5s ease-in;")
                     };
 
+                    let onclick = { 
+                        let ctx = ctx.clone();
+                        move |_| {
+                            ctx.link().send_message(InstructionsMsg::Pressed(idx))
+                        }
+                    };
+
                     html! {
                         <div>
+                            <button class="collapsible" onclick={onclick} ></button>
                             <div class="content" style={ style } ref={&self.node_ref[idx]}>
                                 <p>{ &t.description }</p>
                                 <p>{ &t.info }</p>
@@ -122,19 +130,76 @@ pub mod instructions {
 }
 
 pub mod textinput {
+    use gloo::{console::debug, net::http::Request};
+    use wasm_bindgen::prelude::*;
+    use wasm_bindgen_futures::spawn_local;
     use web_sys::HtmlDivElement;
     use yew::prelude::*;
 
+    #[wasm_bindgen]
+    extern "C" {
+        #[wasm_bindgen]
+        fn editor_create();
+        #[wasm_bindgen]
+        fn editor_val() -> String;
+        #[wasm_bindgen]
+        fn editor_clr();
+    }
+
+    #[derive(Properties, PartialEq)]
+    pub struct TextInputProps {
+        pub is_submit: bool,
+        pub is_clear: bool,
+        pub onsubmitsuccess: Callback<String, ()>,
+    }
+
     #[function_component]
-    fn TextInput() -> Html {
+    pub fn TextInput(props: &TextInputProps) -> Html {
         let div_ref = use_node_ref();
 
-        let div = div_ref.cast::<HtmlDivElement>().unwrap();
+        {
+            let div_ref = div_ref.clone();
 
-        
+            use_effect_with_deps(
+                |div_ref| {
+                    let div = div_ref
+                        .cast::<HtmlDivElement>()
+                        .expect("Not an html div element :(");
+
+                    div.set_id("editor");
+                    
+                    editor_create();
+                    
+                    debug!("Added child");
+                },
+                div_ref,
+            );
+
+            if props.is_submit {
+
+                let userinput = editor_val();
+
+                let request = Request::post("execute_python").body(userinput);
+
+                let callback = props.onsubmitsuccess.clone();
+
+                wasm_bindgen_futures::spawn_local(
+                    async move {
+                        let t = request.send().await.expect("Couldn't fetch the request").text().await.expect("Couldn't read the Response");
+                        callback.emit(t);
+                    }
+                );
+            }
+
+            if props.is_clear {
+                editor_clr();
+            }
+        }
 
         html!(
-            <div ref={ div_ref }></div>
+            <div class="textinput">
+                <div ref={ div_ref }></div>
+            </div>
         )
     }
 }
@@ -157,6 +222,14 @@ pub mod output_terminal {
 
         fn create(ctx: &Context<Self>) -> Self {
             Self { data: "   ".into() }
+        }
+
+        fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+            match msg {
+                OutputTerminalMsg::ShowBusy => self.data = String::from("BUSY"),
+                OutputTerminalMsg::ShowOutput(resp) => self.data = resp,
+            }
+            true
         }
 
         fn view(&self, ctx: &Context<Self>) -> Html {

@@ -1,27 +1,48 @@
+use std::rc::Rc;
+
+use gloo::console::debug;
 use yew::prelude::*;
 use web_sys::console::log_1;
 
 mod new_components;
 
 use new_components::instructions::Instructions;
+use new_components::textinput::TextInput;
 
-#[function_component]
-fn TextInput() -> Html { html! {<div>{ "Hello :)" }</div>} }
+use yew::{function_component, html, Html, Properties};
+
 #[function_component]
 fn OutputTerminal() -> Html { html! {<div>{ "Hello :)" }</div>} }
 
 #[function_component]
 fn App() -> Html {
+    let is_submit = use_state(|| false);
+    let is_clear = use_state(|| false);
+
+    let onsubmit = {
+        let is_submit = is_submit.clone();
+        move |_| {
+            is_submit.set(true);
+        }
+    };
+
+
     let onclick = |_| log_1(&"Click".into());
+
+
+
+    let onsubmitsuccess = |x| {
+        debug!("Received ", x);
+    };
 
     html! {
         <div>
             <Instructions/>
-            <TextInput/>
+            <TextInput is_submit={*is_submit} is_clear={*is_clear} {onsubmitsuccess}/>
             <OutputTerminal/>
             <button onclick={onclick}>{ "Advance" }</button>
             <button onclick={onclick}>{ "Clear" }</button>
-            <button onclick={onclick}>{ "Submit" }</button>
+            <button onclick={onsubmit}>{ "Submit" }</button>
         </div>
     }
 }

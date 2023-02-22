@@ -1262,6 +1262,7 @@ dependencies = [
  "gloo",
  "serde",
  "shared_structs",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
  "yew",
