@@ -23,7 +23,7 @@ use crate::components::interop::{editor_clr, editor_val};
 fn App() -> Html {
     let current_lesson = use_state(|| 0);
     let assignment = use_state_eq(|| Assignment::create_stub());
-
+    
     let onsubmitsuccess = Callback::from(|x| {
         debug!("Received ", x);
     });
@@ -32,12 +32,12 @@ fn App() -> Html {
         let userinput = editor_val();
 
         let request = Request::post("/execute_python").body(userinput);
-
+        
         let callback = onsubmitsuccess.clone();
-
+        
         wasm_bindgen_futures::spawn_local(async move {
             let t = request
-                .send()
+            .send()
                 .await
                 .expect("Couldn't fetch the request")
                 .text()
@@ -50,7 +50,7 @@ fn App() -> Html {
     let onclear = |_| {
         editor_clr();
     };
-
+    
     let onadvance = {
         let current_lesson = current_lesson.clone();
         let assignment = assignment.clone();

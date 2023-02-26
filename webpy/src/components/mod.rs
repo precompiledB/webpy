@@ -1,10 +1,53 @@
 pub mod instructions {
     use gloo::{console::debug, net::http::Request};
-    use shared_structs::tasks::Assignment;
+    use shared_structs::tasks::{Assignment, Task};
     use web_sys::HtmlDivElement;
     use yew::prelude::*;
 
-    #[derive(yew::Properties, PartialEq, Eq)]
+    #[derive(Properties, PartialEq)]
+    pub struct VTaskProps {
+        task: Task,
+    }
+
+    #[function_component]
+    fn VTask(props: &VTaskProps) -> Html {
+        let is_expanded = use_state(|| false);
+        let node_ref = use_node_ref();
+
+        let style = if *is_expanded {
+            let scroll_height =
+                node_ref.cast::<HtmlDivElement>().map_or_else(
+                    || {
+                        debug!("Error getting scroll_height");
+                        20
+                    },
+                    |div| div.scroll_height(),
+                );
+
+            format!(
+                "max-height: {scroll_height}; transition: max-height 0.5s ease-out;"
+            )
+        } else {
+            format!("max-height: 0px; transition: max-height 0.5s ease-in;")
+        };
+
+        let onclick = {
+            move |_| is_expanded.set(!*is_expanded)
+        };
+
+        html! {
+
+            <div>
+                <button class="collapsible" onclick={onclick} ></button>
+                <div class="content" style={ style } ref={node_ref}>
+                    <p>{ &props.task.description }</p>
+                    <p>{ &props.task.info }</p>
+                </div>
+            </div>
+        }
+    }
+
+    #[derive(Properties, PartialEq)]
     pub struct InstructionProps {
         pub assignment: Assignment,
     }
@@ -17,6 +60,7 @@ pub mod instructions {
 
     pub enum InstructionsMsg {
         Pressed(usize),
+        ChangedAssignmentProps(Vec<bool>, Vec<NodeRef>),
     }
 
     impl Component for Instructions {
@@ -26,7 +70,7 @@ pub mod instructions {
         fn create(ctx: &Context<Self>) -> Self {
             Self {
                 //assignment: Assignment::create_stub(),
-                expanded_tasks: vec![],
+                expanded_tasks: Vec::with_capacity(128),
                 node_ref: Vec::with_capacity(128),
             }
         }
@@ -42,40 +86,10 @@ pub mod instructions {
                 .props()
                 .assignment
                 .tasks
-                .iter()
-                .enumerate()
-                .map(|(idx, t)| {
-                    let style = if self.expanded_tasks[idx] {
-                        let scroll_height =
-                            self.node_ref[idx].cast::<HtmlDivElement>().map_or_else(
-                                || {
-                                    debug!("Error getting scroll_height");
-                                    20
-                                },
-                                |div| div.scroll_height(),
-                            );
-
-                        format!(
-                            "max-height: {scroll_height}; transition: max-height 0.5s ease-out;"
-                        )
-                    } else {
-                        format!("max-height: 0px; transition: max-height 0.5s ease-in;")
-                    };
-
-                    let onclick = {
-                        let ctx = ctx.link().clone();
-                        move |_| ctx.send_message(InstructionsMsg::Pressed(idx))
-                    };
-
-                    html! {
-                        <div>
-                            <button class="collapsible" onclick={onclick} ></button>
-                            <div class="content" style={ style } ref={&self.node_ref[idx]}>
-                                <p>{ &t.description }</p>
-                                <p>{ &t.info }</p>
-                            </div>
-                        </div>
-                    }
+                .clone()
+                .into_iter()
+                .map(|task| {
+                    html!{ <VTask {task}/> }
                 })
                 .collect::<Html>();
 
@@ -92,25 +106,19 @@ pub mod instructions {
         }
 
         fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-            let ass = &ctx.props().assignment;
-            debug!(format!("Updating assignment:\n{ass:?}"));
-
-            //if &self.assignment != ass {
-            //debug!("Changed");
-            //ctx.props().assignment = ass.clone();
-
-            self.expanded_tasks = (0..ctx.props().assignment.tasks.len())
-                .map(|_| false)
-                .collect();
-            /*
-             */
-            //}
+            debug!("Update!");
             match msg {
                 InstructionsMsg::Pressed(idx) => {
                     debug!(idx);
                     self.expanded_tasks[idx] = !self.expanded_tasks[idx];
                     true
                 }
+                InstructionsMsg::ChangedAssignmentProps(expanded_tasks, node_ref) => {
+                    debug!(format!("{expanded_tasks:?}"));
+                    self.expanded_tasks = expanded_tasks;
+                    self.node_ref = node_ref;
+                    true
+                },
             }
         }
     }
