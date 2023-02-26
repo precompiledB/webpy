@@ -1,0 +1,5 @@
+[build]
+target = "webpy/index.html"
+filehash = false
+
+

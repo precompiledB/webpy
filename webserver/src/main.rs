@@ -2,9 +2,9 @@ use std::process::Command;
 
 use axum::{
     extract::Path,
-    http::StatusCode,
+    http::{StatusCode, Request},
     routing::{get, get_service, post},
-    Router,
+    Router, body::Body,
 };
 use tokio::io::AsyncReadExt;
 use tower_http::services::{ServeDir, ServeFile};
@@ -25,14 +25,25 @@ async fn main() {
         })
     };
 
+    let d = |path| {
+        get_service(ServeDir::new(path)).handle_error(|error: std::io::Error| async move {
+            eprintln!("ERR {}", error);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Unhandled internal error: {}", error),
+            )
+        })
+    };
+
     // our router
     let app = Router::new()
-        .route("/", f("webpy/index.html"))
+        .route("/", f("webpy/dist/index.html"))
+        .route("/:name", d("./webpy/dist/"))
         .route("/DEBUG", f("webpy/ace_edit.html")) // TODO: remove
-        .route("/favicon.ico", f("webpy/favicon.ico"))
-        .route("/style.css", f("webpy/style.css"))
-        .route("/pkg/webpy_bg.wasm", f("webpy/pkg/webpy_bg.wasm"))
-        .route("/pkg/webpy.js", f("webpy/pkg/webpy.js"))
+        //.route("/favicon.ico", f("webpy/favicon.ico"))
+        //.route("/style.css", f("webpy/style.css"))
+        //.route("/pkg/webpy_bg.wasm", f("webpy/pkg/webpy_bg.wasm"))
+        //.route("/pkg/webpy.js", f("webpy/pkg/webpy.js"))
         .route("/assets/:name", get(give_file))
         .route("/execute_python/", post(exe_py));
 

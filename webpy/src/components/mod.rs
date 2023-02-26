@@ -4,40 +4,42 @@ pub mod instructions {
     use web_sys::HtmlDivElement;
     use yew::prelude::*;
 
+    #[derive(yew::Properties, PartialEq, Eq)]
+    pub struct InstructionProps {
+        pub assignment: Assignment,
+    }
+
     pub struct Instructions {
-        current_lesson: i32,
-        assignment: Assignment,
+        //assignment: Assignment,
         expanded_tasks: Vec<bool>,
         node_ref: Vec<NodeRef>,
     }
 
     pub enum InstructionsMsg {
-        NextInstruction,
-        ReceivedAssignment(Assignment),
         Pressed(usize),
     }
 
     impl Component for Instructions {
         type Message = InstructionsMsg;
-        type Properties = ();
+        type Properties = InstructionProps;
 
         fn create(ctx: &Context<Self>) -> Self {
             Self {
-                current_lesson: 0,
-                assignment: Assignment::create_stub(),
+                //assignment: Assignment::create_stub(),
                 expanded_tasks: vec![],
-                node_ref: vec![],
+                node_ref: Vec::with_capacity(128),
             }
         }
 
         fn view(&self, ctx: &Context<Self>) -> Html {
-            let (symbol, color) = match self.assignment.status {
+            let (symbol, color) = match ctx.props().assignment.status {
                 shared_structs::tasks::Status::Complete => ("[x]", "gray"),
                 shared_structs::tasks::Status::Current => ("[.]", "white"),
                 shared_structs::tasks::Status::Locked => ("###", "darkgray"),
             };
 
-            let tasks = self
+            let tasks = ctx
+                .props()
                 .assignment
                 .tasks
                 .iter()
@@ -60,11 +62,9 @@ pub mod instructions {
                         format!("max-height: 0px; transition: max-height 0.5s ease-in;")
                     };
 
-                    let onclick = { 
-                        let ctx = ctx.clone();
-                        move |_| {
-                            ctx.link().send_message(InstructionsMsg::Pressed(idx))
-                        }
+                    let onclick = {
+                        let ctx = ctx.link().clone();
+                        move |_| ctx.send_message(InstructionsMsg::Pressed(idx))
                     };
 
                     html! {
@@ -82,7 +82,7 @@ pub mod instructions {
             html! {
                 <div class="instructions">
 
-                { &self.assignment.description }
+                { &ctx.props().assignment.description }
                 <div style={format!("color: {color};")}> {symbol} </div>
 
                 { tasks }
@@ -92,35 +92,22 @@ pub mod instructions {
         }
 
         fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+            let ass = &ctx.props().assignment;
+            debug!(format!("Updating assignment:\n{ass:?}"));
+
+            //if &self.assignment != ass {
+            //debug!("Changed");
+            //ctx.props().assignment = ass.clone();
+
+            self.expanded_tasks = (0..ctx.props().assignment.tasks.len())
+                .map(|_| false)
+                .collect();
+            /*
+             */
+            //}
             match msg {
-                InstructionsMsg::NextInstruction => {
-                    let request = Request::get(&format!("assets/task{}.toml", self.current_lesson));
-
-                    ctx.link().send_future(async {
-                        let assignment = request
-                            .send()
-                            .await
-                            .expect("Couldn't get data")
-                            .json::<Assignment>()
-                            .await
-                            .expect("Couldn't transform into Assignment");
-
-                        InstructionsMsg::ReceivedAssignment(assignment)
-                    });
-
-                    false
-                }
-                InstructionsMsg::ReceivedAssignment(assignment) => {
-                    self.assignment = assignment;
-                    self.expanded_tasks = (0..self.assignment.tasks.len()).map(|_| false).collect();
-
-                    self.node_ref = (0..self.assignment.tasks.len())
-                        .map(|_| NodeRef::default())
-                        .collect();
-
-                    true
-                }
                 InstructionsMsg::Pressed(idx) => {
+                    debug!(idx);
                     self.expanded_tasks[idx] = !self.expanded_tasks[idx];
                     true
                 }
@@ -132,29 +119,13 @@ pub mod instructions {
 pub mod textinput {
     use gloo::{console::debug, net::http::Request};
     use wasm_bindgen::prelude::*;
-    use wasm_bindgen_futures::spawn_local;
     use web_sys::HtmlDivElement;
     use yew::prelude::*;
 
-    #[wasm_bindgen]
-    extern "C" {
-        #[wasm_bindgen]
-        fn editor_create();
-        #[wasm_bindgen]
-        fn editor_val() -> String;
-        #[wasm_bindgen]
-        fn editor_clr();
-    }
-
-    #[derive(Properties, PartialEq)]
-    pub struct TextInputProps {
-        pub is_submit: bool,
-        pub is_clear: bool,
-        pub onsubmitsuccess: Callback<String, ()>,
-    }
+    use crate::components::interop::editor_create;
 
     #[function_component]
-    pub fn TextInput(props: &TextInputProps) -> Html {
+    pub fn TextInput() -> Html {
         let div_ref = use_node_ref();
 
         {
@@ -167,37 +138,18 @@ pub mod textinput {
                         .expect("Not an html div element :(");
 
                     div.set_id("editor");
-                    
+                    div.set_inner_text(r#"print("Hello World :)")"#);
+
                     editor_create();
-                    
+
                     debug!("Added child");
                 },
                 div_ref,
             );
-
-            if props.is_submit {
-
-                let userinput = editor_val();
-
-                let request = Request::post("execute_python").body(userinput);
-
-                let callback = props.onsubmitsuccess.clone();
-
-                wasm_bindgen_futures::spawn_local(
-                    async move {
-                        let t = request.send().await.expect("Couldn't fetch the request").text().await.expect("Couldn't read the Response");
-                        callback.emit(t);
-                    }
-                );
-            }
-
-            if props.is_clear {
-                editor_clr();
-            }
         }
 
         html!(
-            <div class="textinput">
+            <div class={classes!("textinput", "webpyinterface")}>
                 <div ref={ div_ref }></div>
             </div>
         )
@@ -221,7 +173,9 @@ pub mod output_terminal {
         type Properties = ();
 
         fn create(ctx: &Context<Self>) -> Self {
-            Self { data: "   ".into() }
+            Self {
+                data: "    ".into(),
+            }
         }
 
         fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -248,5 +202,19 @@ pub mod output_terminal {
                 </div>
             }
         }
+    }
+}
+
+pub mod interop {
+    use wasm_bindgen::prelude::wasm_bindgen;
+
+    #[wasm_bindgen]
+    extern "C" {
+        #[wasm_bindgen]
+        pub fn editor_create();
+        #[wasm_bindgen]
+        pub fn editor_val() -> String;
+        #[wasm_bindgen]
+        pub fn editor_clr();
     }
 }
