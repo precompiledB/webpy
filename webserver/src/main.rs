@@ -1,23 +1,26 @@
-use std::process::Command;
+use std::{process::Command, sync::{Arc, RwLock}};
 
 use axum::{
+    body::Body,
     extract::Path,
-    http::{StatusCode, Request},
+    http::{Request, StatusCode},
     routing::{get, get_service, post},
-    Router, body::Body,
+    Router, Extension,
 };
 use tokio::io::AsyncReadExt;
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::{add_extension::AddExtensionLayer, services::{ServeDir, ServeFile}};
+use tower::{ServiceBuilder};
 
 use shared_structs::tasks;
 
 #[tokio::main]
 async fn main() {
     // build our application with a single route
-    //tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::init();
+
     let f = |path| {
         get_service(ServeFile::new(path)).handle_error(|error: std::io::Error| async move {
-            eprintln!("ERR {}", error);
+            println!("ERR {}", error);
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Unhandled internal error: {}", error),
@@ -27,7 +30,7 @@ async fn main() {
 
     let d = |path| {
         get_service(ServeDir::new(path)).handle_error(|error: std::io::Error| async move {
-            eprintln!("ERR {}", error);
+            println!("ERR {}", error);
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Unhandled internal error: {}", error),
@@ -35,23 +38,44 @@ async fn main() {
         })
     };
 
+    let mut counter = Arc::new(RwLock::new(0));
+
     // our router
     let app = Router::new()
         .route("/", f("webpy/dist/index.html"))
-        .route("/:name", d("./webpy/dist/"))
-        .route("/DEBUG", f("webpy/ace_edit.html")) // TODO: remove
-        //.route("/favicon.ico", f("webpy/favicon.ico"))
-        //.route("/style.css", f("webpy/style.css"))
-        //.route("/pkg/webpy_bg.wasm", f("webpy/pkg/webpy_bg.wasm"))
-        //.route("/pkg/webpy.js", f("webpy/pkg/webpy.js"))
+        .route("/assets/next_assignment", get(next_file))
+            .layer(ServiceBuilder::new()
+                .layer(AddExtensionLayer::new(counter)))
         .route("/assets/:name", get(give_file))
-        .route("/execute_python/", post(exe_py));
+        .route("/execute_python/", post(exe_py))
+        .route("/:name", d("./webpy/dist/"));
 
     // run it with hyper on localhost:8080
     axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+async fn next_file(Extension(counter): Extension<Arc<RwLock<u32>>>) -> String {
+    let mut data = String::new();
+    
+    {
+        let cnt = counter.try_read().unwrap();
+        let path = format!("./webpy/assets/task{}.toml", *cnt);
+        tokio::fs::File::open(std::path::Path::new(&path))
+            .await
+            .unwrap()
+            .read_to_string(&mut data)
+            .await
+            .unwrap();
+    }
+    {
+        let mut cnt = counter.write().unwrap();
+        *cnt += 1;
+    }
+
+    data
 }
 
 async fn give_file(Path(path): Path<String>) -> String {
@@ -98,7 +122,7 @@ async fn exe_py(payload: String) -> String {
         .arg(format!("{}", path.display()))
         .output()
         .expect("Couldn't execute python");
-    
+
     if !cmd.status.success() {
         let error_msg = String::from_utf8(cmd.stderr).expect("No UTF8");
         println!("{error_msg}");
@@ -107,5 +131,6 @@ async fn exe_py(payload: String) -> String {
     } else {
         let succes_msg = String::from_utf8(cmd.stdout).expect("No UTF8");
         Suc(succes_msg)
-    }.to_str()
+    }
+    .to_str()
 }

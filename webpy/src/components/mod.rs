@@ -32,13 +32,21 @@ pub mod instructions {
         };
 
         let onclick = {
+            let is_expanded = is_expanded.clone();    
             move |_| is_expanded.set(!*is_expanded)
         };
 
-        html! {
+        let is_expanded = is_expanded.clone();
 
+        html! {
             <div>
-                <button class="collapsible" onclick={onclick} ></button>
+                <button class={classes!("collapsible", is_expanded.then(|| "active"))} onclick={onclick} >
+                    if *is_expanded {
+                        { "-" }
+                    } else {
+                        { "+" }
+                    }
+                </button>
                 <div class="content" style={ style } ref={node_ref}>
                     <p>{ &props.task.description }</p>
                     <p>{ &props.task.info }</p>

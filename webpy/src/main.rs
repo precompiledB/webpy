@@ -55,6 +55,7 @@ fn App() -> Html {
         let current_lesson = current_lesson.clone();
         let assignment = assignment.clone();
         move |_| {
+            let current_lesson = current_lesson.clone();
             let request = Request::get(&format!("assets/task{}.toml", *current_lesson));
             let assignment = assignment.clone();
             wasm_bindgen_futures::spawn_local(async move {
@@ -72,6 +73,7 @@ fn App() -> Html {
 
                 let ass = ass.expect("Couldn't transform into Assignment");
                 assignment.set(ass);
+                current_lesson.set(*current_lesson+1);
             });
         }
     };
