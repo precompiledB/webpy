@@ -6,6 +6,7 @@ use gloo::timers::callback::Timeout;
 use gloo::utils::window;
 use shared_structs::tasks::Assignment;
 use web_sys::console::log_1;
+use web_sys::HtmlDivElement;
 use yew::platform::time::sleep;
 use yew::prelude::*;
 
@@ -21,42 +22,60 @@ use crate::components::interop::{editor_clr, editor_val};
 
 #[function_component]
 fn App() -> Html {
-    let current_lesson = use_state(|| 0);
     let assignment = use_state_eq(|| Assignment::create_stub());
-    
+    let current_assignment = use_state_eq(|| 0);
+    let current_lesson = use_state_eq(|| 0);
+
+    let on_lesson_changed = {
+        let current_lesson = current_lesson.clone();
+        Callback::from(move |x| {
+            current_lesson.set(x);
+        })
+    };
+
     let onsubmitsuccess = Callback::from(|x| {
         debug!("Received ", x);
     });
 
-    let onsubmit = Callback::from(move |_| {
-        let userinput = editor_val();
+    let onsubmit = {
+        let current_assignment = current_assignment.clone();
+        let current_lesson = current_lesson.clone();
+        Callback::from(move |_| {
+            let userinput = editor_val();
 
-        let request = Request::post("/execute_python").body(userinput);
-        
-        let callback = onsubmitsuccess.clone();
-        
-        wasm_bindgen_futures::spawn_local(async move {
-            let t = request
-            .send()
-                .await
-                .expect("Couldn't fetch the request")
-                .text()
-                .await
-                .expect("Couldn't read the Response");
-            callback.emit(t);
-        });
-    });
+            //let node_ref = instref.clone();
+            //let div: HtmlDivElement = node_ref.cast::<HtmlDivElement>().expect("Couldn't get the div");
+            let current = [("assignment", current_assignment.to_string()), ("lesson", current_lesson.to_string())];
+
+            let request = Request::post("/execute_python")
+                .query(current)
+                .body(userinput);
+
+            let callback = onsubmitsuccess.clone();
+
+            wasm_bindgen_futures::spawn_local(async move {
+                let t = request
+                    .send()
+                    .await
+                    .expect("Couldn't fetch the request")
+                    .text()
+                    .await
+                    .expect("Couldn't read the Response");
+                callback.emit(t);
+            });
+        })
+    };
 
     let onclear = |_| {
         editor_clr();
     };
-    
+
     let onadvance = {
-        let current_lesson = current_lesson.clone();
+        let current_assignment = current_assignment.clone();
         let assignment = assignment.clone();
         move |_| {
-            let current_lesson = current_lesson.clone();
-            let request = Request::get(&format!("assets/task{}.toml", *current_lesson));
+            let current_assignment = current_assignment.clone();
+            let request = Request::get(&format!("assets/task{}.toml", *current_assignment));
             let assignment = assignment.clone();
             wasm_bindgen_futures::spawn_local(async move {
                 let text = request
@@ -73,15 +92,16 @@ fn App() -> Html {
 
                 let ass = ass.expect("Couldn't transform into Assignment");
                 assignment.set(ass);
-                current_lesson.set(*current_lesson+1);
+                current_assignment.set(*current_assignment + 1);
             });
         }
     };
     debug!(format!("assignment: {assignment:?}"));
     let assignment = assignment.clone();
+
     html! {
         <div class="root">
-            <Instructions assignment={(*assignment).clone()}/>
+            <Instructions assignment={(*assignment).clone()} {on_lesson_changed}/>
             <TextInput/>
             <OutputTerminal/>
             <div class="butt">

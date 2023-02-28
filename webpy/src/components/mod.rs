@@ -1,13 +1,19 @@
 pub mod instructions {
+    use std::{ops::AddAssign, rc::Rc};
+
     use gloo::{console::debug, net::http::Request};
     use shared_structs::tasks::{Assignment, Task};
     use web_sys::HtmlDivElement;
     use yew::prelude::*;
 
-    #[derive(Properties, PartialEq)]
+    #[derive(PartialEq, Properties)]
     pub struct VTaskProps {
         task: Task,
+        idx: i32,
+        on_lesson_changed: Callback<i32, ()>,
     }
+
+    // Make VTask radiobuttons so that their is only one current expanded selcetion
 
     #[function_component]
     fn VTask(props: &VTaskProps) -> Html {
@@ -15,25 +21,30 @@ pub mod instructions {
         let node_ref = use_node_ref();
 
         let style = if *is_expanded {
-            let scroll_height =
-                node_ref.cast::<HtmlDivElement>().map_or_else(
-                    || {
-                        debug!("Error getting scroll_height");
-                        20
-                    },
-                    |div| div.scroll_height(),
-                );
+            let scroll_height = node_ref.cast::<HtmlDivElement>().map_or_else(
+                || {
+                    debug!("Error getting scroll_height");
+                    20
+                },
+                |div| div.scroll_height(),
+            );
 
-            format!(
-                "max-height: {scroll_height}; transition: max-height 0.5s ease-out;"
-            )
+            format!("max-height: {scroll_height}px; transition: max-height 0.15s ease-out;")
         } else {
-            format!("max-height: 0px; transition: max-height 0.5s ease-in;")
+            format!("max-height: 0px; transition: max-height 0.15s ease-in;")
         };
 
+        let idx = props.idx;
+
         let onclick = {
-            let is_expanded = is_expanded.clone();    
-            move |_| is_expanded.set(!*is_expanded)
+            let is_expanded = is_expanded.clone();
+            let on_lesson_changed = props.on_lesson_changed.clone();
+            move |_| {
+                if !*is_expanded {
+                    on_lesson_changed.emit(idx);
+                }
+                is_expanded.set(!*is_expanded);
+            }
         };
 
         let is_expanded = is_expanded.clone();
@@ -42,14 +53,15 @@ pub mod instructions {
             <div>
                 <button class={classes!("collapsible", is_expanded.then(|| "active"))} onclick={onclick} >
                     if *is_expanded {
-                        { "-" }
+                        { "- " }
                     } else {
-                        { "+" }
+                        { "+ " }
                     }
+                    { &props.task.description }
                 </button>
                 <div class="content" style={ style } ref={node_ref}>
-                    <p>{ &props.task.description }</p>
                     <p>{ &props.task.info }</p>
+                    <p>{ "Help: " }{ &props.task.help }</p>
                 </div>
             </div>
         }
@@ -58,28 +70,28 @@ pub mod instructions {
     #[derive(Properties, PartialEq)]
     pub struct InstructionProps {
         pub assignment: Assignment,
+        pub on_lesson_changed: Callback<i32, ()>,
     }
 
     pub struct Instructions {
         //assignment: Assignment,
-        expanded_tasks: Vec<bool>,
-        node_ref: Vec<NodeRef>,
+        //expanded_tasks: Vec<bool>,
+        current: i32,
     }
 
-    pub enum InstructionsMsg {
-        Pressed(usize),
-        ChangedAssignmentProps(Vec<bool>, Vec<NodeRef>),
+    pub enum InstructionMsg {
+        ChangedLesson(i32),
     }
 
     impl Component for Instructions {
-        type Message = InstructionsMsg;
+        type Message = InstructionMsg;
         type Properties = InstructionProps;
 
         fn create(ctx: &Context<Self>) -> Self {
             Self {
                 //assignment: Assignment::create_stub(),
-                expanded_tasks: Vec::with_capacity(128),
-                node_ref: Vec::with_capacity(128),
+                //expanded_tasks: Vec::with_capacity(128),
+                current: 0,
             }
         }
 
@@ -90,19 +102,27 @@ pub mod instructions {
                 shared_structs::tasks::Status::Locked => ("###", "darkgray"),
             };
 
+            let link = ctx.link().clone();
+
+            let on_lesson_changed =
+                Callback::from(move |x: i32| link.send_message(InstructionMsg::ChangedLesson(x)));
+
             let tasks = ctx
                 .props()
                 .assignment
                 .tasks
                 .clone()
                 .into_iter()
-                .map(|task| {
-                    html!{ <VTask {task}/> }
+                .enumerate()
+                .map(|(idx, task)| {
+                    html! { <VTask idx={idx as i32} {task} on_lesson_changed={on_lesson_changed.clone()}/> }
                 })
                 .collect::<Html>();
 
+            ctx.props().on_lesson_changed.emit(self.current);
+
             html! {
-                <div class="instructions">
+                <div class="instructions" data-current={self.current.to_string()}>
 
                 { &ctx.props().assignment.description }
                 <div style={format!("color: {color};")}> {symbol} </div>
@@ -114,20 +134,11 @@ pub mod instructions {
         }
 
         fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-            debug!("Update!");
             match msg {
-                InstructionsMsg::Pressed(idx) => {
-                    debug!(idx);
-                    self.expanded_tasks[idx] = !self.expanded_tasks[idx];
-                    true
-                }
-                InstructionsMsg::ChangedAssignmentProps(expanded_tasks, node_ref) => {
-                    debug!(format!("{expanded_tasks:?}"));
-                    self.expanded_tasks = expanded_tasks;
-                    self.node_ref = node_ref;
-                    true
-                },
+                InstructionMsg::ChangedLesson(num) => self.current = num,
             }
+
+            true
         }
     }
 }

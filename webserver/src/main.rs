@@ -1,15 +1,21 @@
-use std::{process::Command, sync::{Arc, RwLock}};
+use std::{
+    process::Command,
+    sync::{Arc, RwLock},
+};
 
 use axum::{
     body::Body,
-    extract::Path,
+    extract::{Path, Query},
     http::{Request, StatusCode},
     routing::{get, get_service, post},
-    Router, Extension,
+    Extension, Router,
 };
 use tokio::io::AsyncReadExt;
-use tower_http::{add_extension::AddExtensionLayer, services::{ServeDir, ServeFile}};
-use tower::{ServiceBuilder};
+use tower::ServiceBuilder;
+use tower_http::{
+    add_extension::AddExtensionLayer,
+    services::{ServeDir, ServeFile},
+};
 
 use shared_structs::tasks;
 
@@ -38,14 +44,9 @@ async fn main() {
         })
     };
 
-    let mut counter = Arc::new(RwLock::new(0));
-
     // our router
     let app = Router::new()
         .route("/", f("webpy/dist/index.html"))
-        .route("/assets/next_assignment", get(next_file))
-            .layer(ServiceBuilder::new()
-                .layer(AddExtensionLayer::new(counter)))
         .route("/assets/:name", get(give_file))
         .route("/execute_python/", post(exe_py))
         .route("/:name", d("./webpy/dist/"));
@@ -55,27 +56,6 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-async fn next_file(Extension(counter): Extension<Arc<RwLock<u32>>>) -> String {
-    let mut data = String::new();
-    
-    {
-        let cnt = counter.try_read().unwrap();
-        let path = format!("./webpy/assets/task{}.toml", *cnt);
-        tokio::fs::File::open(std::path::Path::new(&path))
-            .await
-            .unwrap()
-            .read_to_string(&mut data)
-            .await
-            .unwrap();
-    }
-    {
-        let mut cnt = counter.write().unwrap();
-        *cnt += 1;
-    }
-
-    data
 }
 
 async fn give_file(Path(path): Path<String>) -> String {
@@ -105,10 +85,18 @@ impl ConsoleOutput {
     }
 }
 
+#[derive(serde::Deserialize, Debug)]
+struct CurrentData {
+    assignment: i32,
+    lesson: i32,
+}
+
 // TODO: remove error prone error handling
-async fn exe_py(payload: String) -> String {
+async fn exe_py(Query(CurrentData { assignment, lesson }): Query<CurrentData>, payload: String) -> String {
     use std::io::{Read, Write};
     use ConsoleOutput::*;
+
+    println!("Query: assignemnt {assignment} & lesson {lesson}");
 
     let mut file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
 
@@ -120,6 +108,7 @@ async fn exe_py(payload: String) -> String {
     let cmd = Command::new("python")
         .arg("webserver/pyenv/load_tester.py")
         .arg(format!("{}", path.display()))
+        .arg(format!("{assignment}_{lesson}"))
         .output()
         .expect("Couldn't execute python");
 

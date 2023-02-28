@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use toml;
 
-#[derive(Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Deserialize, Debug)]
 pub struct Assignment {
     pub description: String,
     #[serde(rename = "Task")]
