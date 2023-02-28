@@ -58,6 +58,8 @@ def cls_checkattribval(locals, cls_name, attrib, val):
     else:
         return False
 
+def a1a(lcl):
+    return fnc_checkval(lcl, "greeting", "Hello, world!")
 
 def main() -> None:
     user_code = read_file(file_path=argv[1])
@@ -66,6 +68,13 @@ def main() -> None:
     exec(user_code, gbl, lcl)
 
     # --- testing code
+    test_dict = {
+        (0,0) : "intro",
+        (1,0) : a1a,
+        }
+    
+    current = tuple(map(int, argv[2].split("_")))
+    test_dict[current](lcl)
 
     if 'a' in lcl:
         print('Bravo!')

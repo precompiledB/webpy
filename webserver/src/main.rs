@@ -43,9 +43,6 @@ async fn main() {
     // our router
     let app = Router::new()
         .route("/", f("webpy/dist/index.html"))
-        .route("/assets/next_assignment", get(next_file))
-            .layer(ServiceBuilder::new()
-                .layer(AddExtensionLayer::new(counter)))
         .route("/assets/:name", get(give_file))
         .route("/execute_python/", post(exe_py))
         .route("/:name", d("./webpy/dist/"));
