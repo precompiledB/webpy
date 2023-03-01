@@ -25,6 +25,7 @@ fn App() -> Html {
     let assignment = use_state_eq(|| Assignment::create_stub());
     let current_assignment = use_state_eq(|| 0);
     let current_lesson = use_state_eq(|| 0);
+    let text = use_state(|| String::from("Output"));
 
     let on_lesson_changed = {
         let current_lesson = current_lesson.clone();
@@ -33,9 +34,12 @@ fn App() -> Html {
         })
     };
 
-    let onsubmitsuccess = Callback::from(|x| {
-        debug!("Received ", x);
-    });
+    let onsubmitsuccess = {
+        let text = text.clone();
+        Callback::from(move |x: String| {
+            debug!("Received ", &x);
+            text.set(String::from(&x));
+    })};
 
     let onsubmit = {
         let current_assignment = current_assignment.clone();
@@ -98,12 +102,13 @@ fn App() -> Html {
     };
     debug!(format!("assignment: {assignment:?}"));
     let assignment = assignment.clone();
+    let text = &*text.clone();
 
     html! {
         <div class="root">
             <Instructions assignment={(*assignment).clone()} {on_lesson_changed}/>
             <TextInput/>
-            <OutputTerminal/>
+            <OutputTerminal text={ String::from(text) }/>
             <div class="butt">
                 <button class="advancebutt" onclick={onadvance}>{ "Advance" }</button>
                 <button class="clearbutt" onclick={onclear}>{ "Clear" }</button>

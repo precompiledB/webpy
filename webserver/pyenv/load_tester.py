@@ -75,10 +75,8 @@ def a1b(lcl):
         return False
     
 def a1c(lcl):
-    if "caffine" in lcl:
-        return isinstance(lcl["caffine"], float)
-    else:
-        return False
+    return var_checktype(lcl, "caffine", float)
+
 
 def main() -> None:
     user_code = read_file(file_path=argv[1])
@@ -97,6 +95,7 @@ def main() -> None:
     
     current = tuple(map(int, argv[2].split("_")))
     print(test_dict[current](lcl))
+
     print("#########################################")
 
     # if 'a' in lcl:
