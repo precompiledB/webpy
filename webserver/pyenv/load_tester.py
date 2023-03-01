@@ -60,6 +60,25 @@ def cls_checkattribval(locals, cls_name, attrib, val):
     else:
         return False
 
+def a1a(lcl):
+    if "greeting" in lcl:
+        if lcl["greeting"].upper() == "HELLO, WORLD!":
+            return True
+    else:
+        return False
+    
+def a1b(lcl):
+    if "awake" in lcl:
+        if lcl["awake"] == True:
+            return True
+    else:
+        return False
+    
+def a1c(lcl):
+    if "caffine" in lcl:
+        return isinstance(lcl["caffine"], float)
+    else:
+        return False
 
 def main() -> None:
     user_code = read_file(file_path=argv[1])
@@ -68,18 +87,29 @@ def main() -> None:
     exec(user_code, gbl, lcl)
 
     # --- testing code
+    print("#########################################")
+    test_dict = {
+        (0,0) : "intro",
+        (1,0) : a1a,
+        (1,1) : a1b,
+        (1,2) : a1c,
+        }
+    
+    current = tuple(map(int, argv[2].split("_")))
+    print(test_dict[current](lcl))
+    print("#########################################")
 
-    if 'a' in lcl:
-        print('Bravo!')
+    # if 'a' in lcl:
+    #     print('Bravo!')
 
-    print(lcl)
+    # print(lcl)
 
-    print("fnc?", fnc_checkval(lcl, "hello", False))
+    # print("fnc?", fnc_checkval(lcl, "hello", False))
 
-    print("checkval?", var_checktype(lcl, "a", bool, dict, float, int))
+    # print("checkval?", var_checktype(lcl, "a", bool, dict, float, int))
 
-    print("attrib?", cls_checkattrib(lcl, "A", "a"))
-    print("attrib_val?", cls_checkattribval(lcl, 'A', 'b', "test"))
+    # print("attrib?", cls_checkattrib(lcl, "A", "a"))
+    # print("attrib_val?", cls_checkattribval(lcl, 'A', 'b', "test"))
 
 
 if __name__ == "__main__":
