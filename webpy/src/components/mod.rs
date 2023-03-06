@@ -1,58 +1,95 @@
 pub mod instructions {
-    use std::{ops::AddAssign, rc::Rc};
-
-    use gloo::{console::debug, net::http::Request};
-    use shared_structs::tasks::{Assignment, Task};
+    use gloo::console::debug;
     use web_sys::HtmlDivElement;
     use yew::prelude::*;
+    use shared_structs::tasks::{Assignment, Task};
+
+    #[derive(Properties, PartialEq)]
+    pub struct InstructionProps {
+        pub assignment: Assignment,
+        pub on_lesson_changed: Callback<i32, ()>,
+    }
+
+    #[function_component(Instructions)]
+    pub fn instructions(props: &InstructionProps) -> Html {
+        let current_expand = use_state(|| -1);
+
+        let (symbol, color) = match props.assignment.status {
+            shared_structs::tasks::Status::Complete => ("[x]", "gray"),
+            shared_structs::tasks::Status::Current => ("[.]", "white"),
+            shared_structs::tasks::Status::Locked => ("###", "darkgray"),
+        };
+
+        let on_lesson_changed = {
+            let current_expand = current_expand.clone();
+            let on_lesson_changed = props.on_lesson_changed.clone();
+            Callback::from(move |idx| {
+                current_expand.set(idx);
+                on_lesson_changed.emit(idx)}
+            )
+        };
+        let tasks = props.assignment.tasks.clone()
+            .into_iter()
+            .enumerate()
+            .map(|(idx, task)| {
+                let on_lesson_changed = on_lesson_changed.clone();
+                let idx = idx as i32;
+                html! {<VTask {task} {idx} {on_lesson_changed} is_expanded={idx == *current_expand}/>}
+            })
+            .collect::<Html>();
+
+        html! {
+            <div class="instructions">
+                { &props.assignment.description }
+                <div style={format!("color: {color};")}> {symbol} </div>
+
+                { tasks }
+            </div>
+        }
+    }
 
     #[derive(PartialEq, Properties)]
     pub struct VTaskProps {
         task: Task,
+        is_expanded: bool,
         idx: i32,
         on_lesson_changed: Callback<i32, ()>,
     }
 
-    // Make VTask radiobuttons so that their is only one current expanded selcetion
-
-    #[function_component]
-    fn VTask(props: &VTaskProps) -> Html {
-        let is_expanded = use_state(|| false);
-        let node_ref = use_node_ref();
-
-        let style = if *is_expanded {
-            let scroll_height = node_ref.cast::<HtmlDivElement>().map_or_else(
-                || {
-                    debug!("Error getting scroll_height");
-                    20
-                },
-                |div| div.scroll_height(),
-            );
-
+    fn v_task_style(is_expanded: bool, scroll_height: i32) -> String {
+        if is_expanded {
             format!("max-height: {scroll_height}px; transition: max-height 0.15s ease-out;")
         } else {
             format!("max-height: 0px; transition: max-height 0.15s ease-in;")
+        }
+    }
+
+    #[function_component(VTask)]
+    fn v_task(props: &VTaskProps) -> Html {
+        let node_ref = use_node_ref();
+
+        let scroll_height = node_ref.cast::<HtmlDivElement>().map_or_else(
+            || {
+                debug!("Error getting scroll_height");
+                20
+            },
+            |div| div.scroll_height(),
+        );
+
+        let style = v_task_style(props.is_expanded, scroll_height);
+
+        let on_click = {
+            let callback = props.on_lesson_changed.clone();
+            let idx = props.idx.clone();
+            Callback::from(move |_| {
+                callback.emit(idx);
+            })
         };
-
-        let idx = props.idx;
-
-        let onclick = {
-            let is_expanded = is_expanded.clone();
-            let on_lesson_changed = props.on_lesson_changed.clone();
-            move |_| {
-                if !*is_expanded {
-                    on_lesson_changed.emit(idx);
-                }
-                is_expanded.set(!*is_expanded);
-            }
-        };
-
-        let is_expanded = is_expanded.clone();
 
         html! {
             <div>
-                <button class={classes!("collapsible", is_expanded.then(|| "active"))} onclick={onclick} >
-                    if *is_expanded {
+                <button class={classes!("collapsible", props.is_expanded.then(|| "active"))} onclick={on_click} >
+                    if props.is_expanded {
                         { "- " }
                     } else {
                         { "+ " }
@@ -64,157 +101,6 @@ pub mod instructions {
                     <p>{ "Help: " }{ &props.task.help }</p>
                 </div>
             </div>
-        }
-    }
-
-    #[function_component]
-    fn InstTask(props: &VTaskProps) -> Html {
-
-        let is_expanded = use_state(|| false);
-        let node_ref = use_node_ref();
-
-        let style = if *is_expanded {
-            let scroll_height = node_ref.cast::<HtmlDivElement>().map_or_else(
-                || {
-                    debug!("Error getting scroll_height");
-                    20
-                },
-                |div| div.scroll_height(),
-            );
-
-            format!("max-height: {scroll_height}px; transition: max-height 0.15s ease-out;")
-        } else {
-            format!("max-height: 0px; transition: max-height 0.15s ease-in;")
-        };
-
-        let idx = props.idx;
-
-        let onclick = {
-            let is_expanded = is_expanded.clone();
-            let on_lesson_changed = props.on_lesson_changed.clone();
-            move |_| {
-                if !*is_expanded {
-                    on_lesson_changed.emit(idx);
-                }
-                is_expanded.set(!*is_expanded);
-            }
-        };
-
-        let is_expanded = is_expanded.clone();
-
-
-        let identifier = format!("task{}", props.idx);
-
-        html! {
-            <>
-                <input lass={classes!("collapsible", is_expanded.then(|| "active"))} onclick={onclick} type="radio" id={identifier.clone()} value={identifier.clone()}/>
-                <label for={identifier.clone()}>
-                    if *is_expanded {
-                        { "- " }
-                    } else {
-                        { "+ " }
-                    }
-                    { &props.task.description }
-                </label>
-                <div class="content" style={ style } ref={node_ref}>
-                    <p>{ &props.task.info }</p>
-                    <p>{ "Help: " }{ &props.task.help }</p>
-                </div>
-            </>
-        }
-    }
-
-    #[derive(Properties, PartialEq)]
-    pub struct InstructionProps {
-        pub assignment: Assignment,
-        pub on_lesson_changed: Callback<i32, ()>,
-    }
-
-    pub struct Instructions {
-        //assignment: Assignment,
-        //expanded_tasks: Vec<bool>,
-        current: i32,
-    }
-
-    pub enum InstructionMsg {
-        ChangedLesson(i32),
-    }
-
-    impl Component for Instructions {
-        type Message = InstructionMsg;
-        type Properties = InstructionProps;
-
-        fn create(ctx: &Context<Self>) -> Self {
-            Self {
-                //assignment: Assignment::create_stub(),
-                //expanded_tasks: Vec::with_capacity(128),
-                current: 0,
-            }
-        }
-
-        fn view(&self, ctx: &Context<Self>) -> Html {
-            let (symbol, color) = match ctx.props().assignment.status {
-                shared_structs::tasks::Status::Complete => ("[x]", "gray"),
-                shared_structs::tasks::Status::Current => ("[.]", "white"),
-                shared_structs::tasks::Status::Locked => ("###", "darkgray"),
-            };
-
-            let link = ctx.link().clone();
-
-            let on_lesson_changed =
-                Callback::from(move |x: i32| link.send_message(InstructionMsg::ChangedLesson(x)));
-
-            let tasks = ctx
-                .props()
-                .assignment
-                .tasks
-                .clone()
-                .into_iter()
-                .enumerate()
-                .map(|(idx, task)| {
-                    html! { <VTask idx={idx as i32} {task} on_lesson_changed={on_lesson_changed.clone()}/> }
-                })
-                .collect::<Html>();
-
-                let insttasks = ctx
-                .props()
-                .assignment
-                .tasks
-                .clone()
-                .into_iter()
-                .enumerate()
-                .map(|(idx, task)| {
-                    html! { <InstTask idx={idx as i32} {task} on_lesson_changed={on_lesson_changed.clone()}/> }
-                })
-                .collect::<Html>();
-
-            ctx.props().on_lesson_changed.emit(self.current);
-
-            html! {<>
-                <div class="instructions" data-current={self.current.to_string()}>
-
-                { &ctx.props().assignment.description }
-                <div style={format!("color: {color};")}> {symbol} </div>
-
-                { tasks }
-
-                </div>
-                <form>
-                    <fieldset>
-                        <div>
-                            { insttasks }
-                        </div>
-                    </fieldset>
-                </form>
-            </>}
-        }
-
-        fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-            match msg {
-                InstructionMsg::ChangedLesson(num) => self.current = num,
-            }
-
-            true
         }
     }
 }
@@ -271,12 +157,12 @@ pub mod output_terminal {
     pub fn OutputTerminal(props: &OutputTerminalProps) -> Html {
         let (color, text) = props.text.split_at(4);
 
-            let color = match color {
-                "Suc:" => "green",
-                "Err:" => "red",
-                "Inf:" => "gray",
-                _ => "cauliflowerblue",
-            };
+        let color = match color {
+            "Suc:" => "green",
+            "Err:" => "red",
+            "Inf:" => "gray",
+            _ => "cauliflowerblue",
+        };
 
 
         html! {

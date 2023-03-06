@@ -1,0 +1,42 @@
+PyDev console: starting.
+Python 3.10.9 (main, Dec 19 2022, 17:35:49) [GCC 12.2.0] on linux
+class A:
+    def __init__(self,a,b):
+        self.a = a
+        self.b = b
+x = lambda x: lambda y: x * y
+a = 3
+b = x(2)
+b(4)
+8
+A
+<class '__main__.A'>
+d = 2569
+e = x(3.015)
+c = A(d, e)
+from  webserver.pyenv.tester import *
+t = Tester({'a': a, 'b': b, 'c':c, 'A': A})
+t.var_from('a').check_type(int)
+'Success'
+t.var_from('a').check_type(dict)
+'VarWrongType'
+t.var_from('x').check_type(dict)
+'VarNotFound'
+t.var_from('a').check_value(3)
+'Success'
+t.var_from('b').fun_black_box_test([4], 8)
+'Success'
+t.var_from('b').check_type(object)
+'Success'
+t.var_from('c').check_type(object)
+'Success'
+t.var_from('c').check_type(A)
+'Success'
+t.var_from('c').var.a
+2569
+t.cls_from('A')
+<webserver.pyenv.tester.ClassTester object at 0x7fcc4c014c40>
+t.cls_from('A').has_attribute('a')
+'ClsNotAnAttr'
+hasattr(t.cls_from('A').cls, 'a')
+False

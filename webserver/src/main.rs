@@ -88,15 +88,15 @@ impl ConsoleOutput {
 #[derive(serde::Deserialize, Debug)]
 struct CurrentData {
     assignment: i32,
-    lesson: i32,
+    task: i32,
 }
 
 // TODO: remove error prone error handling
-async fn exe_py(Query(CurrentData { assignment, lesson }): Query<CurrentData>, payload: String) -> String {
+async fn exe_py(Query(CurrentData { assignment, task }): Query<CurrentData>, payload: String) -> String {
     use std::io::{Read, Write};
     use ConsoleOutput::*;
 
-    println!("Query: assignemnt {assignment} & lesson {lesson}");
+    println!("Query: assignemnt {assignment} & lesson {task}");
 
     let mut file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
 
@@ -108,7 +108,7 @@ async fn exe_py(Query(CurrentData { assignment, lesson }): Query<CurrentData>, p
     let cmd = Command::new("python")
         .arg("webserver/pyenv/load_tester.py")
         .arg(format!("{}", path.display()))
-        .arg(format!("{assignment}_{lesson}"))
+        .arg(format!("{assignment}_{task}"))
         .output()
         .expect("Couldn't execute python");
 

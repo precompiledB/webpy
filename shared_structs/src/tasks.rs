@@ -37,5 +37,5 @@ pub struct Task {
 pub enum Status {
     Complete,
     Current,
-    Locked,
+    Locked, // not wanted by client:)
 }

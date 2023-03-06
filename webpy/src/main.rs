@@ -20,11 +20,11 @@ use yew::{function_component, html, Html};
 
 use crate::components::interop::{editor_clr, editor_val};
 
-#[function_component]
-fn App() -> Html {
+#[function_component(App)]
+fn app() -> Html {
     let assignment = use_state_eq(|| Assignment::create_stub());
     let current_assignment = use_state_eq(|| 0);
-    let current_lesson = use_state_eq(|| 0);
+    let current_lesson = use_state_eq(|| -1);
     let text = use_state(|| String::from("Output"));
 
     let on_lesson_changed = {
@@ -45,11 +45,13 @@ fn App() -> Html {
         let current_assignment = current_assignment.clone();
         let current_lesson = current_lesson.clone();
         Callback::from(move |_| {
+            if *current_lesson == -1 {
+                gloo::dialogs::alert("Please select a task from the left panel first.");
+            } else {
+
             let userinput = editor_val();
 
-            //let node_ref = instref.clone();
-            //let div: HtmlDivElement = node_ref.cast::<HtmlDivElement>().expect("Couldn't get the div");
-            let current = [("assignment", current_assignment.to_string()), ("lesson", current_lesson.to_string())];
+            let current = [("assignment", current_assignment.to_string()), ("task", current_lesson.to_string())];
 
             let request = Request::post("/execute_python")
                 .query(current)
@@ -67,6 +69,8 @@ fn App() -> Html {
                     .expect("Couldn't read the Response");
                 callback.emit(t);
             });
+            }
+
         })
     };
 
