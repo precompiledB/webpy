@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use toml;
 
 #[derive(PartialEq, Eq, Clone, Deserialize, Debug)]
@@ -33,7 +33,7 @@ pub struct Task {
     pub status: Status,
 }
 
-#[derive(Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone)]
 pub enum Status {
     Complete,
     Current,

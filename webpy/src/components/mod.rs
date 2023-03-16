@@ -1,3 +1,5 @@
+pub mod user_profile;
+
 pub mod instructions {
     use gloo::console::debug;
     use web_sys::HtmlDivElement;

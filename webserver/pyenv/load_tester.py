@@ -1,11 +1,11 @@
 from sys import argv
-
+import tester
 
 def read_file(file_path) -> str:
     file = file_path
     with open(file, "r", encoding="utf-8") as user_code:
         payload = user_code.read()
-        print('Success, reading:\n***\n', payload, '\n***')
+        #print('Success, reading:\n***\n', payload, '\n***')
         return payload
 
 
@@ -60,23 +60,39 @@ def cls_checkattribval(locals, cls_name, attrib, val):
     else:
         return False
 
+
 def a1a(lcl):
     if "greeting" in lcl:
         if lcl["greeting"].upper() == "HELLO, WORLD!":
             return True
     else:
         return False
-    
+
+
 def a1b(lcl):
     if "awake" in lcl:
         if lcl["awake"] == True:
             return True
     else:
         return False
-    
+
+
 def a1c(lcl):
     return var_checktype(lcl, "caffine", float)
 
+
+def a2b(lcl):
+    t = tester.Tester(lcl)
+    a_da = t.var_from('a').check_type(object)
+    b_da = t.var_from('b').check_type(object)
+
+    is_da = lambda x: True if x is "Success" else False
+    a_da = is_da(a_da)
+    b_da = is_da(b_da)
+
+    print(f"\nIs a existent? {a_da}\nIs b existent? {b_da}\n")
+
+    return a_da and b_da
 
 def main() -> None:
     user_code = read_file(file_path=argv[1])
@@ -85,18 +101,20 @@ def main() -> None:
     exec(user_code, gbl, lcl)
 
     # --- testing code
-    print("#########################################")
+    #print("#########################################")
     test_dict = {
-        (0,0) : "intro",
-        (1,0) : a1a,
-        (1,1) : a1b,
-        (1,2) : a1c,
-        }
-    
-    current = tuple(map(int, argv[2].split("_")))
-    print(test_dict[current](lcl))
+        (0, 0): "intro",
+        (1, 0): a1a,
+        (1, 1): a1b,
+        (1, 2): a1c,
+        (2, 0): a1a,
+        (2, 1): a2b,
+    }
 
-    print("#########################################")
+    current = tuple(map(int, argv[2].split("_")))
+    print("Did the test pass?", test_dict[current](lcl))
+
+    #print("#########################################")
 
     # if 'a' in lcl:
     #     print('Bravo!')

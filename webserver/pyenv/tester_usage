@@ -1,6 +1,8 @@
 PyDev console: starting.
 Python 3.10.9 (main, Dec 19 2022, 17:35:49) [GCC 12.2.0] on linux
 class A:
+    c = 0
+    d = 0
     def __init__(self,a,b):
         self.a = a
         self.b = b

@@ -9,11 +9,20 @@ html, body {
     grid-template-columns: 1fr 1fr 2fr; /*width*/
     grid-template-rows: 5fr 40fr 40fr 40fr; /*height*/
     grid-template-areas:
-        ". butt butt"
+        "user butt butt"
         "inst eingabe eingabe"
         "inst eingabe eingabe"
         "inst term term";
-    gap: 5px 5px
+    gap: 5px 5px;
+}
+
+.user {
+    align: left;
+    background-color: #eee;
+}
+
+.user:hover {
+    background-color: #abc;
 }
 
 .webpyinterface {

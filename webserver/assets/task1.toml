@@ -4,7 +4,7 @@ status = "Current"
 [[Task]]
 description = "hello numbers"
 info = "Create an integer, a float and a boolean"
-help = "Assign a name to a variable with '='"
+help = "No help, you should figure that out on yourself ..."
 template = "print('hello world')"
 status = "Current"
 
@@ -12,6 +12,6 @@ status = "Current"
 description = "hello variables"
 info = """Create two variables: a and b
 """
-help = "No help, ypuu should figure that out on yourself ..."
+help = "Assign a name to a variable with '='"
 template = "print('hello world')"
 status = "Current"
