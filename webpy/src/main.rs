@@ -151,7 +151,7 @@ fn app() -> Html {
         }
     };
 
-    let on_user_change = {
+    /*let on_user_change = {
         let user_data = user_data.clone();
         Callback::from(move |_| {
             let requested_user = gloo::dialogs::prompt("Please type in a User name", Some("user name"))
@@ -162,7 +162,7 @@ fn app() -> Html {
                 }
             );
         })
-    };
+    };*/
 
 
     let onnamechange = {
@@ -182,7 +182,7 @@ fn app() -> Html {
             <Instructions assignment={(*assignment).clone()} {on_lesson_changed}/>
             <TextInput/>
             <OutputTerminal text={ String::from(text) }/>
-            <ProfileManager user_data={(*user_data).clone()}  {on_user_change}/>
+            //<ProfileManager user_data={(*user_data).clone()}  {on_user_change}/>
             <div class="butt">
                 <button class="advancebutt" onclick={onadvance}>{ "Advance" }</button>
                 <button class="clearbutt" onclick={onclear}>{ "Clear" }</button>
