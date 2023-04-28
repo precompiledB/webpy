@@ -15,6 +15,7 @@ mod components;
 use components::instructions::Instructions;
 use components::output_terminal::OutputTerminal;
 use components::textinput::TextInput;
+use components::profile_manager::ProfileManager;
 
 use yew::{function_component, html, Html};
 
@@ -25,7 +26,8 @@ fn app() -> Html {
     let assignment = use_state_eq(|| Assignment::create_stub());
     let current_assignment = use_state_eq(|| 0);
     let current_lesson = use_state_eq(|| -1);
-    let text = use_state(|| String::from("Output"));
+    let text = use_state_eq(|| String::from("Output"));
+    let profile_name = use_state_eq(|| String::from("NoUser"));
 
     let on_lesson_changed = {
         let current_lesson = current_lesson.clone();
@@ -104,12 +106,22 @@ fn app() -> Html {
             });
         }
     };
+
+    let onnamechange = {
+        let profile_name = profile_name.clone();
+        Callback::from(move |s| {
+            profile_name.set(s);
+            debug!(&*(*profile_name).clone());
+    })};
+
     debug!(format!("assignment: {assignment:?}"));
     let assignment = assignment.clone();
     let text = &*text.clone();
+    let profile_name = &*profile_name.clone();
 
     html! {
         <div class="root">
+            <ProfileManager name={profile_name.to_string()} {onnamechange} />
             <Instructions assignment={(*assignment).clone()} {on_lesson_changed}/>
             <TextInput/>
             <OutputTerminal text={ String::from(text) }/>

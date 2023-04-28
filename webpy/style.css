@@ -9,7 +9,7 @@ html, body {
     grid-template-columns: 1fr 1fr 2fr; /*width*/
     grid-template-rows: 5fr 40fr 40fr 40fr; /*height*/
     grid-template-areas:
-        ". butt butt"
+        "prof butt butt"
         "inst eingabe eingabe"
         "inst eingabe eingabe"
         "inst term term";
@@ -73,6 +73,16 @@ html, body {
 }
 
 .butt > *:hover {
+    background-color: #abc;
+}
+
+.profile {
+    grid-area: prof;
+    text-align: left;
+    background-color: #eee;
+}
+
+.profile :hover {
     background-color: #abc;
 }
 

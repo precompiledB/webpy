@@ -77,6 +77,25 @@ def a1b(lcl):
 def a1c(lcl):
     return var_checktype(lcl, "caffine", float)
 
+def a2a(lcl: dict):
+    isint = False; isfloat = False; isbool = False
+    for var in lcl.values():
+        if isinstance(var, int):
+            isint = True
+        elif isinstance(var, float):
+            isfloat = True
+        elif isinstance(var, bool):
+            isbool = True
+    return isint and isfloat and isbool
+
+def a2b(lcl: dict):
+    from tester import Tester
+    t = Tester(lcl)
+    isa = t.var_from('a').check_type(object)
+    isb = t.var_from('b').check_type(object)
+    print(f"does a exist?: {isa}")
+    print(f"does b exist?: {isb}")
+    return isa is "Success" and isb is "Success"
 
 def main() -> None:
     user_code = read_file(file_path=argv[1])
@@ -91,6 +110,8 @@ def main() -> None:
         (1,0) : a1a,
         (1,1) : a1b,
         (1,2) : a1c,
+        (2,0) : a2a,
+        (2,1) : a2b,
         }
     
     current = tuple(map(int, argv[2].split("_")))

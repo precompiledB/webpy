@@ -186,3 +186,7 @@ pub mod interop {
         pub fn editor_clr();
     }
 }
+
+pub mod profile_manager;
+
+
