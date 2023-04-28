@@ -17,8 +17,6 @@ use tower_http::{
     services::{ServeDir, ServeFile},
 };
 
-use shared_structs::tasks;
-
 #[tokio::main]
 async fn main() {
     // build our application with a single route
@@ -60,7 +58,7 @@ async fn main() {
 
 async fn give_file(Path(path): Path<String>) -> String {
     let mut data = String::new();
-    tokio::fs::File::open(std::path::Path::new("./webpy/assets").join(path))
+    tokio::fs::File::open(std::path::Path::new("webserver/assets").join(path))
         .await
         .unwrap()
         .read_to_string(&mut data)
@@ -99,6 +97,8 @@ async fn exe_py(Query(CurrentData { assignment, task }): Query<CurrentData>, pay
     println!("Query: assignemnt {assignment} & lesson {task}");
 
     let mut file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
+
+    dbg!(&payload);
 
     file.write_all(payload.as_bytes())
         .expect("Cannot write in tempfile");

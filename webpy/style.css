@@ -13,7 +13,16 @@ html, body {
         "inst eingabe eingabe"
         "inst eingabe eingabe"
         "inst term term";
-    gap: 5px 5px
+    gap: 5px 5px;
+}
+
+.user {
+    align: left;
+    background-color: #eee;
+}
+
+.user:hover {
+    background-color: #abc;
 }
 
 .webpyinterface {

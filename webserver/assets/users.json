@@ -1,0 +1,25 @@
+[
+  {
+    "name":"NoUser",
+    "current_progress":[]
+  },
+  {
+    "name":"Leander",
+    "current_progress":[
+      {
+        "assignment":0,
+        "task_progress":
+        [
+          {
+            "task":2,
+            "status":"Complete"
+          },
+          {
+            "task":1,
+            "status": "Current"
+          }
+        ]
+      }
+    ]
+  }
+]

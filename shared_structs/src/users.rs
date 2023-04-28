@@ -1,16 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-struct User {
-    name: String,
-    current_progress: Vec<AssignmentProgress>,
+#[derive(Deserialize, Serialize)]
+pub struct User {
+    pub name: String,
+    pub current_progress: Vec<AssignmentProgress>,
 }
 
-struct AssignmentProgress {
-    assignment: u32,
-    task_progress: Vec<TaskProgress>,
+#[derive(Deserialize, Serialize)]
+pub struct AssignmentProgress {
+    pub assignment: u32,
+    pub task_progress: Vec<TaskProgress>,
 }
 
-struct TaskProgress {
-    task: u32,
-    status: crate::tasks::Status,
+#[derive(Deserialize, Serialize)]
+pub struct TaskProgress {
+    pub task: u32,
+    pub status: crate::tasks::Status,
 }
