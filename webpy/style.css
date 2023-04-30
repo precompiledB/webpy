@@ -1,3 +1,30 @@
+html, body {
+  height: 100%;
+}
+
+.root {
+    display: grid;
+    height: 100vh;
+    width: 100vw;
+    grid-template-columns: 1fr 1fr 2fr; /*width*/
+    grid-template-rows: 5fr 40fr 40fr 40fr; /*height*/
+    grid-template-areas:
+        "prof butt butt"
+        "inst eingabe eingabe"
+        "inst eingabe eingabe"
+        "inst term term";
+    gap: 5px 5px;
+}
+
+.user {
+    align: left;
+    background-color: #eee;
+}
+
+.user:hover {
+    background-color: #abc;
+}
+
 .webpyinterface {
     position: relative;
     grid-area: eingabe;
@@ -41,34 +68,35 @@
 .butt {
     grid-area: butt;
     display: grid;
-    grid-template-rows: 10fr 1fr 10fr 1fr 10fr;
-    grid-template-columns: auto;
-    grid-template-areas: "clr . adv . submit";
+    grid-template-rows: auto;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: "clr adv submit";
 }
 
-/* .butt > * {
-    padding: 5px;
-} */
-
-.root > * {
-    margin: 10px;
-}
-
-.root {
-    display: grid;
+.butt > * {
     height: 100%;
-    width: 100%;
-    grid-template-columns: 1fr 1fr 2fr; /*width*/
-    grid-template-rows: 20px 250px 250px 250px; /*height*/
-    grid-template-areas: 
-        ". . butt"
-        "inst eingabe eingabe"
-        "inst eingabe eingabe"
-        "inst term term";
+    border-radius: 0px;
+    border: 1px solid #ccc;
+    padding: 2px;
+    background-color: #eee;
+}
+
+.butt > *:hover {
+    background-color: #abc;
+}
+
+.profile {
+    grid-area: prof;
+    text-align: left;
+    background-color: #eee;
+}
+
+.profile :hover {
+    background-color: #abc;
 }
 
 .collapsible {
-    background-color: #eeeeee;
+    background-color: #eee;
     color: #444;
     cursor: pointer;
     padding: 18px;
@@ -81,7 +109,7 @@
 }
 
 .active, .collapsible:hover {
-    background-color: #ccc;
+    background-color: #abc;
 }
 
 .content {
@@ -90,3 +118,5 @@
     overflow: hidden;
     background-color: #f1f1f1;
 }
+
+

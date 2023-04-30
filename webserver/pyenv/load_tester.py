@@ -1,11 +1,11 @@
 from sys import argv
-
+import tester
 
 def read_file(file_path) -> str:
     file = file_path
     with open(file, "r", encoding="utf-8") as user_code:
         payload = user_code.read()
-        print('Success, reading:\n***\n', payload, '\n***')
+        #print('Success, reading:\n***\n', payload, '\n***')
         return payload
 
 
@@ -47,10 +47,12 @@ def var_checktype(locals, var_name, *types):
 def fnc_checkval(locals, fnc_name, expected_output):
     return True if var_exists(locals, fnc_name) and locals[fnc_name]() == expected_output else False
 
+
 def cls_checkattrib(locals, cls_name, attrib):
     if var_exists(locals, cls_name):
         return attrib in locals[cls_name].__dict__
     return False
+
 
 def cls_checkattribval(locals, cls_name, attrib, val):
     if cls_checkattrib(locals, cls_name, attrib):
@@ -59,6 +61,58 @@ def cls_checkattribval(locals, cls_name, attrib, val):
         return False
 
 
+def a1a(lcl):
+    if "greeting" in lcl:
+        if lcl["greeting"].upper() == "HELLO, WORLD!":
+            return True
+    else:
+        return False
+
+
+def a1b(lcl):
+    if "awake" in lcl:
+        if lcl["awake"] == True:
+            return True
+    else:
+        return False
+
+
+def a1c(lcl):
+    return var_checktype(lcl, "caffine", float)
+
+def a2a(lcl: dict):
+    isint = False; isfloat = False; isbool = False
+    for var in lcl.values():
+        if isinstance(var, int):
+            isint = True
+        elif isinstance(var, float):
+            isfloat = True
+        elif isinstance(var, bool):
+            isbool = True
+    return isint and isfloat and isbool
+
+def a2b(lcl: dict):
+    from tester import Tester
+    t = Tester(lcl)
+    isa = t.var_from('a').check_type(object)
+    isb = t.var_from('b').check_type(object)
+    print(f"does a exist?: {isa}")
+    print(f"does b exist?: {isb}")
+    return isa is "Success" and isb is "Success"
+
+def a2b(lcl):
+    t = tester.Tester(lcl)
+    a_da = t.var_from('a').check_type(object)
+    b_da = t.var_from('b').check_type(object)
+
+    is_da = lambda x: True if x is "Success" else False
+    a_da = is_da(a_da)
+    b_da = is_da(b_da)
+
+    print(f"\nIs a existent? {a_da}\nIs b existent? {b_da}\n")
+
+    return a_da and b_da
+
 def main() -> None:
     user_code = read_file(file_path=argv[1])
     gbl = create_globals()
@@ -66,18 +120,33 @@ def main() -> None:
     exec(user_code, gbl, lcl)
 
     # --- testing code
+    #print("#########################################")
+    test_dict = {
+        (0, 0): "intro",
+        (1, 0): a1a,
+        (1, 1): a1b,
+        (1, 2): a1c,
+        (2, 0): a1a,
+        (2, 1): a2b,
+    }
 
-    if 'a' in lcl:
-        print('Bravo!')
+    current = tuple(map(int, argv[2].split("_")))
+    print("Did the test pass?", test_dict[current](lcl))
 
-    print(lcl)
+    #print("#########################################")
 
-    print("fnc?", fnc_checkval(lcl, "hello", False))
+    # if 'a' in lcl:
+    #     print('Bravo!')
 
-    print("checkval?", var_checktype(lcl, "a", bool, dict, float, int))
+    # print(lcl)
 
-    print("attrib?", cls_checkattrib(lcl, "A", "a"))
-    print("attrib_val?", cls_checkattribval(lcl, 'A', 'b', "test"))
+    # print("fnc?", fnc_checkval(lcl, "hello", False))
+
+    # print("checkval?", var_checktype(lcl, "a", bool, dict, float, int))
+
+    # print("attrib?", cls_checkattrib(lcl, "A", "a"))
+    # print("attrib_val?", cls_checkattribval(lcl, 'A', 'b', "test"))
+
 
 if __name__ == "__main__":
     main()

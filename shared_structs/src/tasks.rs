@@ -1,7 +1,7 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use toml;
 
-#[derive(Deserialize, Debug)]
+#[derive(PartialEq, Eq, Clone, Deserialize, Debug)]
 pub struct Assignment {
     pub description: String,
     #[serde(rename = "Task")]
@@ -24,7 +24,7 @@ impl Assignment {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Task {
     pub description: String,
     pub info: String,
@@ -33,9 +33,9 @@ pub struct Task {
     pub status: Status,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone)]
 pub enum Status {
     Complete,
     Current,
-    Locked,
+    Locked, // not wanted by client:)
 }

@@ -1,23 +1,40 @@
-use std::process::Command;
+use std::{
+    process::Command,
+    sync::{Arc, RwLock},
+};
 
 use axum::{
-    extract::Path,
-    http::StatusCode,
+    body::Body,
+    extract::{Path, Query},
+    http::{Request, StatusCode},
     routing::{get, get_service, post},
-    Router,
+    Extension, Router,
 };
 use tokio::io::AsyncReadExt;
-use tower_http::services::{ServeDir, ServeFile};
-
-use shared_structs::tasks;
+use tower::ServiceBuilder;
+use tower_http::{
+    add_extension::AddExtensionLayer,
+    services::{ServeDir, ServeFile},
+};
 
 #[tokio::main]
 async fn main() {
     // build our application with a single route
-    //tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::init();
+
     let f = |path| {
         get_service(ServeFile::new(path)).handle_error(|error: std::io::Error| async move {
-            eprintln!("ERR {}", error);
+            println!("ERR {}", error);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Unhandled internal error: {}", error),
+            )
+        })
+    };
+
+    let d = |path| {
+        get_service(ServeDir::new(path)).handle_error(|error: std::io::Error| async move {
+            println!("ERR {}", error);
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Unhandled internal error: {}", error),
@@ -27,14 +44,10 @@ async fn main() {
 
     // our router
     let app = Router::new()
-        .route("/", f("webpy/index.html"))
-        .route("/DEBUG", f("webpy/ace_edit.html")) // TODO: remove
-        .route("/favicon.ico", f("webpy/favicon.ico"))
-        .route("/style.css", f("webpy/style.css"))
-        .route("/pkg/webpy_bg.wasm", f("webpy/pkg/webpy_bg.wasm"))
-        .route("/pkg/webpy.js", f("webpy/pkg/webpy.js"))
+        .route("/", f("webpy/dist/index.html"))
         .route("/assets/:name", get(give_file))
-        .route("/execute_python/", post(exe_py));
+        .route("/execute_python/", post(exe_py))
+        .route("/:name", d("./webpy/dist/"));
 
     // run it with hyper on localhost:8080
     axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
@@ -45,7 +58,7 @@ async fn main() {
 
 async fn give_file(Path(path): Path<String>) -> String {
     let mut data = String::new();
-    tokio::fs::File::open(std::path::Path::new("./webpy/assets").join(path))
+    tokio::fs::File::open(std::path::Path::new("webserver/assets").join(path))
         .await
         .unwrap()
         .read_to_string(&mut data)
@@ -70,12 +83,22 @@ impl ConsoleOutput {
     }
 }
 
+#[derive(serde::Deserialize, Debug)]
+struct CurrentData {
+    assignment: i32,
+    task: i32,
+}
+
 // TODO: remove error prone error handling
-async fn exe_py(payload: String) -> String {
+async fn exe_py(Query(CurrentData { assignment, task }): Query<CurrentData>, payload: String) -> String {
     use std::io::{Read, Write};
     use ConsoleOutput::*;
 
+    println!("Query: assignemnt {assignment} & lesson {task}");
+
     let mut file = tempfile::NamedTempFile::new().expect("Cannot create temp file");
+
+    dbg!(&payload);
 
     file.write_all(payload.as_bytes())
         .expect("Cannot write in tempfile");
@@ -85,9 +108,10 @@ async fn exe_py(payload: String) -> String {
     let cmd = Command::new("python")
         .arg("webserver/pyenv/load_tester.py")
         .arg(format!("{}", path.display()))
+        .arg(format!("{assignment}_{task}"))
         .output()
         .expect("Couldn't execute python");
-    
+
     if !cmd.status.success() {
         let error_msg = String::from_utf8(cmd.stderr).expect("No UTF8");
         println!("{error_msg}");
@@ -96,5 +120,6 @@ async fn exe_py(payload: String) -> String {
     } else {
         let succes_msg = String::from_utf8(cmd.stdout).expect("No UTF8");
         Suc(succes_msg)
-    }.to_str()
+    }
+    .to_str()
 }

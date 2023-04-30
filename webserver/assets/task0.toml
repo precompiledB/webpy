@@ -1,0 +1,24 @@
+description = "hello"
+status = "Current"
+
+[[Task]]
+description = "hello int"
+info = "Create a number/integer"
+help = "Assign a name to a variable with '='"
+template = "print('hello world')"
+status = "Current"
+
+[[Task]]
+description = "hello float"
+info = """Create a float
+"""
+help = "Floating-point numbers are similar to decimal numbers in that ..."
+template = "print('hello world')"
+status = "Current"
+
+[[Task]]
+description = "hello bool"
+info = """Create a boolean"""
+help = "Booleans have two possible values: 'True' or 'False'"
+template = "print('hello world')"
+status = "Current"

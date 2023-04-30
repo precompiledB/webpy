@@ -1,35 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="modulepreload" href="/pkg/webpy.js" as="script" type="text/javascript">
-    <link rel="preload" href="/pkg/webpy_bg.wasm" as="fetch" type="application/wasm" crossorigin="anonymous">
-    <link rel="stylesheet" href="/style.css">
-</head>
-
-<body>
-    <section class="root">
-        <section id="app" style="display: contents;"></section>
-        <script type="module">
-            import init from '/pkg/webpy.js';
-            init('/pkg/webpy_bg.wasm');
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.js" type="text/javascript" charset="utf-8"></script>
-        <div class="webpyinterface">
-            <div id="editor">print("Hello World")</div>
-        </div>
+    <head>
+        <meta charset="utf-8"/>
+        <title>WebPy</title>
+        <link data-trunk rel="css" href="/style.css"/>
+        <link data-trunk rel="icon" type="image/x-icon" href="/favicon.ico"/>
+    </head>
+    <body>
+        <script 
+            src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.js" 
+            type="text/javascript" 
+            charset="utf-8"></script>
         <script>
-            var editor = ace.edit("editor");
-            editor.setTheme("ace/theme/monokai");
-            editor.session.setMode("ace/mode/python");
-            console.log("#####################");
-            console.log(editor);
-            setTimeout(() => {
-                editor.resize();
-                console.log("resized the editor");
-            }, 1000);
+            var editor;
+
+            const editor_create = () => {
+                editor = ace.edit("editor");
+                editor.setTheme("ace/theme/monokai");
+                editor.session.setMode("ace/mode/python");
+                console.log("#####################");
+                console.log(editor);
+                setTimeout(() => {
+                    editor.resize();
+                    console.log("resized the editor");
+                }, 1000);
+            };
 
             const editor_val = () => {
                 let val = editor.getValue();
@@ -40,16 +35,6 @@
             const editor_clr = () => {
                 editor.setValue("");
             }
-
-            const change_scroll_height = (is_pressed) => {
-                if (is_pressed) {
-                    this.content.style.maxHeight = null;
-                } else {
-                    this.content.style.maxHeight = this.content.scrollHeight + "px";
-                }
-            };
         </script>
-    </section>
-</body>
-
+    </body>
 </html>
